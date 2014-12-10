@@ -33,6 +33,21 @@ namespace TTbarAnalysis
 		}
 		return sqrt(sqr);
 	}
+	float MathOperator::getDistance(const float * start, const float * end)
+	{
+		vector<float> vec;
+		for (int i = 0; i < 3; i++) 
+		{
+			vec.push_back(start[i] - end[i]);
+		}
+		float sqr = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+		        sqr += vec[i]*vec[i];
+		}
+		return sqrt(sqr);
+	}
+	
 	
 	float MathOperator::getModule(const vector< int > & v)
 	{

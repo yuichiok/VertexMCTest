@@ -26,6 +26,7 @@ namespace TTbarAnalysis
 			static bool approximatelyEqual(const double * start1, const double * end, double p);
 			static bool approximatelyEqual(const double * start1, const float * end, double p);
 			static float getDistance(const double * start, const double * end);
+			static float getDistance(const float * start, const float * end);
 			static std::vector< float > * vectorProduct(const std::vector< float > & v1,const std::vector< float > & v2);
 			static float getAngle(const double * vector1, const double * vector2);
 			static float getDistanceTo(const std::vector< int > & vectorPoint1,const std::vector< float > & vector1, const std::vector< int > * pointOfLine );
