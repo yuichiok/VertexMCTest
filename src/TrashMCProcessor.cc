@@ -41,14 +41,17 @@ namespace TTbarAnalysis
 		_hTree = new TTree( "Stats", "My test tree!" );
 		_hTree->Branch("bdistance", &_bdistance, "bdistance/F");
 		_hTree->Branch("bbardistance", &_bbardistance, "bbardistance/F");
-		_hTree->Branch("firstVertexDistance", _firstVertexDistance, "firstVertexDistance[numberOfB0]/F");
-		_hTree->Branch("secondVertexDistance", _secondVertexDistance, "secondVertexDistance[numberOfB0]/F");
+		_hTree->Branch("bmomentum", &_bmomentum, "bmomentum/F");
+		_hTree->Branch("bbarmomentum", &_bbarmomentum, "bbarmomentum/F");
+		//_hTree->Branch("firstVertexDistance", _firstVertexDistance, "firstVertexDistance[numberOfB0]/F");
+		//_hTree->Branch("secondVertexDistance", _secondVertexDistance, "secondVertexDistance[numberOfB0]/F");
 		_hVertexTree = new TTree( "Vertexes", "My test tree!" );
 		_hVertexTree->Branch("tag", &_tag, "tag/I");
 		_hVertexTree->Branch("numberOfVertexes", &_numberOfVertexes, "numberOfVertexes/I");
 		_hVertexTree->Branch("distance", _distanceFromIP, "distance[numberOfVertexes]/F");
 		_hVertexTree->Branch("coordinates", _coordinates, "coordinates[numberOfVertexes][3]/F");
 		_hVertexTree->Branch("PDG", _PDG, "PDG[numberOfVertexes]/I");
+		_hVertexTree->Branch("charge", _charge, "charge[numberOfVertexes]/I");
 		_hVertexTree->Branch("generation", _generation, "generation[numberOfVertexes]/I");
 		_hVertexTree->Branch("numberOfParticles", _numberOfParticles, "numberOfParticles[numberOfVertexes]/I");
 		_hVertexTree->Branch("energyOfParticles", _energyOfParticles, "energyOfParticles[numberOfVertexes][15]/F");
@@ -84,7 +87,7 @@ namespace TTbarAnalysis
 		{
 			_numberOfVertexes = number++;
 			_PDG[_numberOfVertexes] = chain->GetParentPDG();
-			_generation[_numberOfVertexes] = i+2;
+			_generation[_numberOfVertexes] = i+1;
 			MCParticle * parent = chain->Get(i);
 			if (!parent) 
 			{
@@ -96,16 +99,16 @@ namespace TTbarAnalysis
 				std::cout<<"ERROR: NUMBER IS 0!\n";
 			}
 			_numberOfParticles[_numberOfVertexes] = daughters.size();
+			int charge = 0;
 			for (int j = 0; j < daughters.size(); j++) 
 			{
 				MCParticle * daughter = daughters[j];
-				if (abs(daughter->getCharge()) > 0.0 && daughter->isDecayedInCalorimeter()) 
-				{
-					_energyOfParticles[_numberOfVertexes][j] = daughter->getEnergy();
-					_momentumOfParticles[_numberOfVertexes][j] = MathOperator::getModule( daughter->getMomentum());
-					_massOfParticles[_numberOfVertexes][j] = daughter->getMass();
-				}
+				charge += daughter->getCharge();
+				_energyOfParticles[_numberOfVertexes][j] = daughter->getEnergy();
+				_momentumOfParticles[_numberOfVertexes][j] = MathOperator::getModule( daughter->getMomentum());
+				_massOfParticles[_numberOfVertexes][j] = daughter->getMass();
 			}
+			_charge[_numberOfVertexes] = chain->Get(i-1)->getCharge();
 		}
 	}
 	void TrashMCProcessor::PrintChain(vector< MCParticle * > * chain)
@@ -147,10 +150,6 @@ namespace TTbarAnalysis
 				for (int i = 0; i < bvetrexes->size(); i++)
 				{
 				        std::cout<<"Vertex b-quark"<< i <<": " << bvetrexes->at(i)->getParameters()[0] << '\n';
-					if (i == 0 && bvetrexes->at(i)) 
-					{
-						_firstVertexDistance[0] = bvetrexes->at(i)->getParameters()[0];
-					}
 					if (i == 1 && bvetrexes->at(i))
 					{
 					        _secondVertexDistance[0] = bvetrexes->at(i)->getParameters()[0];
@@ -165,11 +164,6 @@ namespace TTbarAnalysis
 				for (int i = 0; i < bbarvetrexes->size(); i++)
 				{
 				        std::cout<<"Vertex bbar-quark"<< i <<": " << bbarvetrexes->at(i)->getParameters()[0] << '\n';
-					if (i == 0 && bbarvetrexes->at(i)) 
-					{
-						_firstVertexDistance[1] = bbarvetrexes->at(i)->getParameters()[0];
-
-					}
 					if (i == 1 && bbarvetrexes->at(i)) 
 					{
 						_secondVertexDistance[1] = bbarvetrexes->at(i)->getParameters()[0];
@@ -179,14 +173,18 @@ namespace TTbarAnalysis
 				}
 
 			}
-			if (bvetrexes && bbarvetrexes && bvetrexes->size() == 2 && bbarvetrexes->size() == 2 ) 
+			if (bChain && bChain->Get(0)) 
 			{
-				std::cout << "Everything went fine!\n";
+				_bmomentum = MathOperator::getModule(bChain->Get(0)->getMomentum());
+			}
+			if (bbarChain && bbarChain->Get(0)) 
+			{
+				_bbarmomentum = MathOperator::getModule(bbarChain->Get(0)->getMomentum());
 			}
 			WriteVertexCollection(evt, bvetrexes, bbarvetrexes);
 			int number = 0;
-			Write(opera,bChain,number);
 			Write(opera,bbarChain,number);
+			Write(opera,bChain,number);
 			_numberOfVertexes = number;
 
 			//std::cout<< "There was " << _numberOfB0 << " B-mesons.\n";
@@ -237,6 +235,7 @@ namespace TTbarAnalysis
 		}
 		for (int i = 0; i < MAXV; i++) 
 		{
+			_charge[i] = 0;
 			_PDG[i] = 0;
 			_generation[i] = 0;
 			for (int j = 0; j < MAXV; j++) 

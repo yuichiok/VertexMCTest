@@ -87,6 +87,8 @@ namespace TTbarAnalysis
 	  float _secondVertexDistance[2];
 	  float _bdistance;
 	  float _bbardistance;
+	  float _bmomentum;
+	  float _bbarmomentum;
 	  static const int MAXV = 15;
 	  int _tag;
 	  int _numberOfVertexes;
@@ -94,6 +96,7 @@ namespace TTbarAnalysis
 	  float _coordinates[MAXV][3];
 	  int _PDG[MAXV];
 	  int _generation[MAXV];
+	  int _charge[MAXV];
 	  int _numberOfParticles[MAXV];
 	  float _energyOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];

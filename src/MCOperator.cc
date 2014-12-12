@@ -23,13 +23,18 @@ namespace TTbarAnalysis
 			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) ) ;
 			if (particle->getPDG() == pdg) 
 			{
+				if (CheckForUnification(particle, pdg)) 
+				{
+					std::cout << "WARNING: found a quark-antiquark merging!\n";
+					continue;
+				}
 				for (int j = 0; j < typeOfProducts.size(); j++) 
 				{
 					MESONS currentPDG = typeOfProducts[j];
 					MCParticle * found = FindYoungestChild(particle, currentPDG);
 					if (found) 
 					{
-						if (CheckForServiceParticle(found, pdg)) 
+						if (CheckForColorString(found, pdg)) 
 						{
 							MCParticle * service = found->getParents()[0];
 							MCParticle * consistent = GetConsistentDaughter(particle, service, currentPDG);
@@ -42,6 +47,10 @@ namespace TTbarAnalysis
 						}
 						else 
 						{
+							if (found->getParents()[0]->getPDG() == 92 && found->getCharge() * particle->getCharge() < -0.001) 
+							{
+								std::cout << "FATAL: Charge is wrong!\n";
+							}
 							result->Add(found);
 							finished = true;
 						}
@@ -60,6 +69,38 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
+	bool MCOperator::CheckForUnification(MCParticle * particle, int pdg)
+	{
+		vector< MCParticle * > daughters = particle->getDaughters();
+		if (daughters.size() == 0) 
+		{
+			return false;
+		}
+		if (daughters.size() == 1 && daughters[0]->getPDG() == pdg) 
+		{
+			return CheckForUnification(daughters[0], pdg);
+		}
+		if (daughters.size() == 1 && (daughters[0]->getPDG() == 92 || daughters[0]->getPDG() == 94)) 
+		{
+			vector< MCParticle * > grandDaughters = daughters[0]->getDaughters();
+			bool foundParticle = false;
+			bool foundAntiparticle = false;
+			for (int i = 0; i < grandDaughters.size(); i++) 
+			{
+				if (grandDaughters[i]->getPDG() == pdg) 
+				{
+					foundParticle = true;
+				}
+				if (grandDaughters[i]->getPDG() == -pdg) 
+				{
+					foundAntiparticle = true;
+				}
+			}
+			return foundParticle && foundAntiparticle;
+		}
+		return false;
+
+	}
 	bool MCOperator::CheckParticle(MCParticle * particle, MESONS type)
 	{
 		bool result = false;
@@ -74,7 +115,7 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
-	bool MCOperator::CheckForServiceParticle(EVENT::MCParticle * daughter, int pdgOfParent)
+	bool MCOperator::CheckForColorString(EVENT::MCParticle * daughter, int pdgOfParent)
 	{
 		vector< MCParticle * > parents = daughter->getParents();
 		if (parents.size() == 1) 
@@ -113,27 +154,27 @@ namespace TTbarAnalysis
 		for (int i = 0; i < size; i++) 
 		{
 			MCParticle * daughter = daughters[i];
-			//std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
-			if (daughter->getEnergy() > parent->getEnergy()) //|| 
-			   //(daughter->getCharge()*parent->getCharge() < 0.0 && 
-			   //(daughter->getCharge() > 0.0 +0.0001 || daughter->getCharge() < 0.0 - 0.0001))) 
+			std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
+			if (daughter->getEnergy() > parent->getEnergy())// || 
 			{
 				continue;
 			}
 			if (daughter->getCharge()*parent->getCharge() > 0.0)
 			{
-				//std::cout << "Same sign of charge!\n";
+				std::cout << "Same sign of charge!\n";
 				return daughter;
 			}
 			angle[i] = MathOperator::getAngle(daughter->getMomentum(), parent->getMomentum());
 		}
 		float minAngle = myAngleCut;
 		int winner = -1;
-		//std::cout << "Checking angles...\n";
+		std::cout << "Checking angles...\n";
 		for (int i = 0; i < size; i++) 
 		{
-			//std::cout << "Angle " << i << ": " << angle[i] << '\n';
-			if (angle[i] < minAngle && daughters[i]->getEnergy() < parent->getEnergy()) 
+			std::cout << "Angle " << i << ": " << angle[i] << '\n';
+			if (angle[i] < minAngle && 
+			   daughters[i]->getEnergy() < parent->getEnergy() &&
+			   daughters[i]->getCharge()*parent->getCharge() > -0.0001) 
 			{
 				minAngle = angle[i];
 				winner = i;
@@ -141,10 +182,15 @@ namespace TTbarAnalysis
 		}
 		if (winner > -1) 
 		{
-			//std::cout << "Choosing angle " << winner <<  "\n";
+			std::cout << "Choosing angle " << winner <<  "\n";
+			if (daughters[winner]->getCharge()*parent->getCharge() < -0.0001) 
+			{
+				std::cout << "FATAL: Charge is wrong!\n";
+				
+			}
 			return daughters[winner];
 		}
-		//std::cout << "ERROR: Angle cut is wrong!\n";
+		std::cout << "Angle is wrong!\n";
 		return NULL;
 	}
 	MESONS MCOperator::GetParticleType(MCParticle * particle)
