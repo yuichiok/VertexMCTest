@@ -28,6 +28,7 @@ namespace TTbarAnalysis
 		//	Methods
 		//
 			bool CheckProcessForPair(int pdg);
+			float GetAccuracy(EVENT::MCParticle * particle, float a, float b);
 			DecayChain * Construct(std::string name, int pdg, std::vector<MESONS> typeOfProducts);
 			bool CheckForUnification(EVENT::MCParticle * particle, int pdg);
 			bool CheckParticle(EVENT::MCParticle * particle, MESONS type);
@@ -38,8 +39,9 @@ namespace TTbarAnalysis
 			bool CheckForColorString(EVENT::MCParticle * daughter, int pdgOfParent);
 			EVENT::MCParticle * GetConsistentDaughter(EVENT::MCParticle * parent, EVENT::MCParticle * service, MESONS type);
 			std::vector< EVENT::MCParticle * > ScanForVertexParticles(const float * vertex, double precision);
-			std::vector< EVENT::MCParticle * > SelectStableCloseDaughters(EVENT::MCParticle * parent);
+			std::vector< EVENT::MCParticle * > SelectStableCloseDaughters(EVENT::MCParticle * parent, bool discardCharmedMesons = true);
 			std::vector< EVENT::MCParticle * > ScanForVertexParticles(const double * vertex, double precision);
+			bool CheckCompatibility(std::vector< EVENT::MCParticle * > & daughters, EVENT::MCParticle * parent, int plusCharge = 0);
 		private:
 		//
 		//	Data

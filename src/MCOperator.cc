@@ -47,10 +47,6 @@ namespace TTbarAnalysis
 						}
 						else 
 						{
-							if (found->getParents()[0]->getPDG() == 92 && found->getCharge() * particle->getCharge() < -0.001) 
-							{
-								std::cout << "FATAL: Charge is wrong!\n";
-							}
 							result->Add(found);
 							finished = true;
 						}
@@ -281,14 +277,26 @@ namespace TTbarAnalysis
 			return NULL;
 		}
 		//std::cout<<"Checking " << daughters.size() <<" I gen of daughters. \n";
+		MCParticle * result;
+		int count = 0;
 		for (int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters.at(i);
 			if (CheckParticle(daughter,type)) 
 			{
 				//std::cout << "Found PDG: " << daughter->getPDG() << ";\n";
-				return daughter;
+				count++;
+				result = daughter;
 			}
+		}
+		if (result) 
+		{
+			if (count > 1 && type == CHARMED_MESONS) 
+			{
+				std::cout<<"FATAL: Daughter multiplicity found for meson type " << type <<"!\n";
+				return NULL;
+			}
+			return result;
 		}
 		//std::cout<<"Not found in I gen. Checking next gen.\n";
 		for (int i = 0; i < daughters.size(); i++) 
@@ -410,13 +418,12 @@ namespace TTbarAnalysis
 		std::cout<<"INFO: " << countParticle << " t-quarks and " << countAntiparticle << " tbar-quarks\n";
 		return countParticle && countAntiparticle;
 	}
-	vector< MCParticle * > MCOperator::SelectStableCloseDaughters(MCParticle * parent)
+	vector< MCParticle * > MCOperator::SelectStableCloseDaughters(MCParticle * parent, bool discardCharmedMesons)
 	{
 		vector< MCParticle * > result;
 		if (!parent || 
-		    parent->getPDG() == 22 ||
-		    parent->getPDG() == 111 ||
-		    CheckParticle(parent, CHARMED_MESONS)) 
+		    CheckParticle(parent, NONTRACKABLE_PARTICLES) ||
+		    (CheckParticle(parent, CHARMED_MESONS) && discardCharmedMesons)) 
 		{
 			return result;
 		}
@@ -425,26 +432,28 @@ namespace TTbarAnalysis
 		{
 			return result;
 		}
-		if ( parent && MathOperator::getDistance(daughters[0]->getVertex(), parent->getVertex()) > 50.0) // Long distance!!!
+		if ( parent && MathOperator::getDistance(daughters[0]->getVertex(), parent->getVertex()) > 100.0) // Long distance!!!
 		{
-			//std::cout<<"WARNING: Long-lived noninteracting particle!\n";
+			std::cout<<"WARNING: Long-lived noninteracting particle " << parent->getPDG() <<"!\n";
 			return result;
 		}
 		bool finished = false;
 		for (int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters[i];
-			//std::cout<<"\tFound daughter " << daughter->getPDG() << "\n";
-			if ((daughter->isDecayedInCalorimeter() || daughter->isDecayedInTracker()) && 
-			    abs(daughter->getCharge())>0.00001)
+			if (CheckParticle(daughter, TRACKABLE_PARTICLES))
 			{
 				//std::cout<<"\tDaughter reached calorimeter!\n";
+				if (MathOperator::getModule(daughter->getMomentum()) < 0.1) 
+				{
+					//std::cout<<"CAUTION: Low momentum particle of " << MathOperator::getModule(daughter->getMomentum()) << " GeV!\n";
+				}
 				finished = true;
 				result.push_back(daughter);
 			}
 			else 
 			{
-				vector< MCParticle * > grannies = SelectStableCloseDaughters(daughter);
+				vector< MCParticle * > grannies = SelectStableCloseDaughters(daughter, discardCharmedMesons);
 				for (int j = 0; j < grannies.size(); j++) 
 				{
 					result.push_back(grannies[j]);
@@ -452,5 +461,37 @@ namespace TTbarAnalysis
 			}
 		}
 		return result;
+	}
+	float MCOperator::GetAccuracy(MCParticle * particle, float a, float b)
+	{
+		float p = MathOperator::getModule(particle->getMomentum());
+		float m = particle->getMass();
+		float gamma = sqrt( 1 + (p * p) / (m * m));
+		vector<float> direction = MathOperator::getDirection(particle->getMomentum());
+		vector<float> angles = MathOperator::getAngles(direction);
+		float accuracy = sqrt(a*a + b*b /( p * p * pow(sin(angles[1]), 4.0/3.0)) );
+		return gamma*accuracy;
+	}
+	bool MCOperator::CheckCompatibility(vector< MCParticle * > & daughters, MCParticle * parent, int plusCharge)
+	{
+		int charge = 0;
+		float mass = 0.0;
+		for (unsigned int i = 0; i < daughters.size(); i++)
+		{
+			MCParticle * daughter = daughters[i];
+			mass += daughter->getMass();
+			charge += daughter->getCharge();
+		}
+		if (charge + plusCharge != (int)(parent->getCharge())) 
+		{
+			std::cout<< "CAUTION: Charge is not compatible: charges " << charge << " and " << parent->getCharge() << ", " << plusCharge <<"!\n";
+			return false;
+		}
+		if (mass > parent->getMass()) 
+		{
+			std::cout<< "CAUTION: Mass is not compatible!\n";
+			return false;
+		}
+		return true;
 	}
 } /*  */

@@ -73,24 +73,40 @@ namespace TTbarAnalysis
 	  std::string _outputcolName;
 	  std::vector<MESONS> _pdgs;
 	  
+	  int _tagParameter;
+	  float _aParameter;
+	  float _bParameter;
 	  TFile * _hfile;
 	  TTree * _hTree;
 	  TTree * _hVertexTree;
 	  std::string _hfilename ;
 
-	  int _charmedPDG[2];
-	  int _strangePDG[2];
-	  int _bottomPDG[2];
-	  float _strangeCharge[2];
+	  int _tag;
 	  int _numberOfB0;
 	  float _firstVertexDistance[2];
 	  float _secondVertexDistance[2];
+	  float _baccuracy;
+	  float _bbaraccuracy;
+	  float _bIPdistance;
+	  float _bbarIPdistance;
+	  float _btracks;
+	  float _bbartracks;
+	  float _ctracks;
+	  float _cbartracks;
 	  float _bdistance;
 	  float _bbardistance;
 	  float _bmomentum;
 	  float _bbarmomentum;
+	  float _cmomentum;
+	  float _cbarmomentum;
+	  float _caccuracy;
+	  float _cbaraccuracy;
+	  int _bnumber;
+	  int _bbarnumber;
+	  int _cnumber;
+	  int _cbarnumber;
+
 	  static const int MAXV = 15;
-	  int _tag;
 	  int _numberOfVertexes;
 	  float _distanceFromIP[MAXV];
 	  float _coordinates[MAXV][3];
@@ -101,7 +117,7 @@ namespace TTbarAnalysis
 	  float _energyOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];
 	  float _massOfParticles[MAXV][MAXV];
-
+	
 
 	  int _nRun ;
 	  int _nEvt ;

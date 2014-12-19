@@ -10,6 +10,8 @@ namespace TTbarAnalysis
 		BOTTOM_MESONS,
 		CHARMED_MESONS,
 		STRANGE_MESONS,
+		TRACKABLE_PARTICLES,
+		NONTRACKABLE_PARTICLES,
 		_max_MESONS = STRANGE_MESONS
 	};
 	class ConstantStorage 
@@ -30,6 +32,8 @@ namespace TTbarAnalysis
 		static const std::vector<int> & CHARMED_MESONS_PGD();
 		static const std::vector<int> & STRANGE_MESONS_PGD();
 		static const std::vector<int> & BOTTOM_MESONS_PGD();
+		static const std::vector<int> & TRACKABLE_PARTICLES_PGD();
+		static const std::vector<int> & NONTRACKABLE_PARTICLES_PGD();
 		
 		static const std::vector<int> & GET_PDG(MESONS type);
 		//static constructor pattern
@@ -126,7 +130,18 @@ namespace TTbarAnalysis
 				myStrangeMesonsPDGs.push_back(329);
 				myStrangeMesonsPDGs.push_back(9000319);
 				myStrangeMesonsPDGs.push_back(9000329);
-				
+				///////////////TRACKABLE//////////////////////
+				myTrackableParticlesPDGs.push_back(11);
+				myTrackableParticlesPDGs.push_back(13);
+				myTrackableParticlesPDGs.push_back(211);
+				myTrackableParticlesPDGs.push_back(321);
+				myTrackableParticlesPDGs.push_back(2212);
+				///////////////NONTRACKABLE//////////////////////
+				myNonTrackableParticlesPDGs.push_back(111);
+				myNonTrackableParticlesPDGs.push_back(22);
+				myNonTrackableParticlesPDGs.push_back(2112);
+				myNonTrackableParticlesPDGs.push_back(130);
+				myNonTrackableParticlesPDGs.push_back(310);
 			}
 		} _initializer;
 		
@@ -137,6 +152,8 @@ namespace TTbarAnalysis
 			static std::vector<int> myCharmedMesonsPDGs; 
 			static std::vector<int> myBottomMesonsPDGs; 
 			static std::vector<int> myStrangeMesonsPDGs; 
+			static std::vector<int> myTrackableParticlesPDGs; 
+			static std::vector<int> myNonTrackableParticlesPDGs; 
 		//
 		//	Private methods
 		//

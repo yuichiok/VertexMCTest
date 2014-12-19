@@ -94,6 +94,42 @@ namespace TTbarAnalysis
 		}
 		return acos((float)product/module1/module2);
 	}
+	vector< float > MathOperator::getAngles(vector< float > & direction)
+	{
+		vector< float > result;
+		float epsilon = 0.00001;
+		float semi = 1.5708;
+		float pi = 2*semi;
+		float phi = 0.0;
+		if (direction[0] > 0.0 && direction[1] > 0.0 - epsilon) 
+		{
+			phi = atan(direction[1] / direction[0]); //(direction[0] < epsilon && direction[0] > 0.0 - epsilon)?
+		}
+		if (direction[0] < 0.0 && direction[1] > 0.0) 
+		{
+			phi = semi - atan(direction[1] / direction[0]) ;
+		}
+		if (direction[0] < 0.0 && direction[1] < 0.0 + epsilon) 
+		{
+			phi =  atan(direction[1] / direction[0]) + pi;
+		}
+		if (direction[0] > 0.0 && direction[1] < 0.0 - epsilon) 
+		{
+			phi = semi - atan(direction[1] / direction[0]) + pi;
+		}
+		if (direction[1] > 0.0 && direction[0] < 0.0 + epsilon && direction[0] > 0.0 -  epsilon) 
+		{
+			phi = semi;
+		}
+		if (direction[1] < 0.0 && direction[0] < 0.0 + epsilon && direction[0] > 0.0 -  epsilon) 
+		{
+			phi = pi + semi;
+		}
+		float teta = acos(direction[2]);
+		result.push_back(phi);
+		result.push_back(teta);
+		return result;
+	}
 	vector< float > MathOperator::getDirection(vector< int > & vectorPoint1, vector< int > & vectorPoint2)
 	{
 		/*double * arr1 = MathOperator::castIntToDouble(&vectorPoint1[0]);
@@ -126,6 +162,16 @@ namespace TTbarAnalysis
 		for (int i = 0; i < 3; i++)
 		{
 		        vector1[i] = vector1[i]/module;
+		}
+		return vector1;
+	}
+	vector< float > MathOperator::getDirection(const double * vectorPoint)
+	{
+		float module = getModule(vectorPoint);
+		vector< float > vector1;
+		for (int i = 0; i < 3; i++) 
+		{
+			vector1.push_back(vectorPoint[i] / module);
 		}
 		return vector1;
 	}
