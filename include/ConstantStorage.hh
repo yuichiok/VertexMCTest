@@ -43,11 +43,12 @@ namespace TTbarAnalysis
 			_init()
 			{
 				///////////////CHARMED/////////////////////
+				myCharmedMesonsPDGs.push_back(421);
+				myCharmedMesonsPDGs.push_back(411);
+				//*
 				myCharmedMesonsPDGs.push_back(433);
 				myCharmedMesonsPDGs.push_back(413);
 				myCharmedMesonsPDGs.push_back(431);
-				myCharmedMesonsPDGs.push_back(411);
-				myCharmedMesonsPDGs.push_back(421);
 				myCharmedMesonsPDGs.push_back(10411);
 				myCharmedMesonsPDGs.push_back(10421);
 				myCharmedMesonsPDGs.push_back(423);
@@ -61,9 +62,11 @@ namespace TTbarAnalysis
 				myCharmedMesonsPDGs.push_back(10433);
 				myCharmedMesonsPDGs.push_back(20433);
 				myCharmedMesonsPDGs.push_back(435);
+				//*/
 				///////////////BOTTOM//////////////////////
 				myBottomMesonsPDGs.push_back(511);
 				myBottomMesonsPDGs.push_back(521);
+				///*
 				myBottomMesonsPDGs.push_back(513);
 				myBottomMesonsPDGs.push_back(523);
 				myBottomMesonsPDGs.push_back(515);
@@ -76,6 +79,7 @@ namespace TTbarAnalysis
 				myBottomMesonsPDGs.push_back(545);
 				myBottomMesonsPDGs.push_back(10511);
 				myBottomMesonsPDGs.push_back(10521);
+				myBottomMesonsPDGs.push_back(10523);
 				myBottomMesonsPDGs.push_back(10513);
 				myBottomMesonsPDGs.push_back(20513);
 				myBottomMesonsPDGs.push_back(20523);
@@ -85,6 +89,7 @@ namespace TTbarAnalysis
 				myBottomMesonsPDGs.push_back(10541);
 				myBottomMesonsPDGs.push_back(10543);
 				myBottomMesonsPDGs.push_back(20543);
+				///*/
 				///////////////STRANGE//////////////////
 				myStrangeMesonsPDGs.push_back(130);
 				myStrangeMesonsPDGs.push_back(310);

@@ -309,4 +309,67 @@ namespace TTbarAnalysis
 		point->push_back(z);
 		return point;
 	}
+	float MathOperator::getPt(const double * momentum)
+	{
+		return sqrt(momentum[0] * momentum[0] + momentum[1] * momentum[1]);
+	}
+	float MathOperator::getRapidity(const double * momentum)
+	{
+		float p = getModule(momentum);
+		float pL = momentum[2];
+		float result = -1.0;
+		if (p > pL) 
+		{
+			result = 0.5 * log((p+pL)/(p-pL));
+		}
+		return result;
+	}
+	double * MathOperator::getPtOnVector(const double * momentum, const float * target)
+	{
+		double * converted = toDoubleArray(target, 3);
+		for (int i = 0; i < 3; i++) 
+		{
+			std::cout << i << ": " << converted[i];
+		}
+		std::cout << '\n';
+		vector< float > direction = getDirection(converted);
+		double pt[3];
+		double product = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+			product += momentum[i] * direction[i];
+		}
+		for (int i = 0; i < 3; i++) 
+		{
+			pt[i] = momentum[i] - direction[i] * product;
+		}
+		std::cout << "Pl: " << product << " |Pt|: " << getModule(pt) << '\n';
+		return pt;
+	}
+	double MathOperator::getMissingPt(vector< const double * > & vectors, const float * target)
+	{
+		double sum[3];
+		vector< double * > pts;
+		for (int i = 0; i < vectors.size(); i++) 
+		{
+			pts.push_back(getPtOnVector(vectors[i], target));
+		}
+		for (int i = 0; i < 3; i++) 
+		{
+			for (int j = 0; j < vectors.size(); j++) 
+			{
+				sum[i] += pts[j][i]; 
+			}
+		}
+		return getModule(sum);
+	}
+	double * MathOperator::toDoubleArray(const float * target, int size)
+	{
+		double * array = new double[3]();
+		for (int i = 0; i < size; i++) 
+		{
+			array[i] = target[i];
+		}
+		return array;
+	}
 }

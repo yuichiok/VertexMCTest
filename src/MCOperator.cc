@@ -13,6 +13,36 @@ namespace TTbarAnalysis
 		myPrimaryVertex[2] = 0.0;
 		myAngleCut = 0.7854; // \pi/4
 	}
+	DecayChain * MCOperator::RefineDecayChain(DecayChain * initial, vector<MESONS> typeOfProducts)
+	{
+		if (!initial || initial->GetSize() < 2) 
+		{
+			return NULL;
+		}
+		int size = initial->GetSize();
+		DecayChain * result = new DecayChain(initial->GetName(), initial->GetParentPDG());
+		for (int i = 1; i < size; i++) 
+		{
+			MCParticle * particle = initial->Get(i);
+			vector< MCParticle * > parents = particle->getParents();
+			MCParticle * parent = NULL;
+			if (parents.size() == 1 && CheckParticle(parents[0],typeOfProducts[i-1])) 
+			{
+				parent = parents[0];
+			}
+			else 
+			{
+				parent = initial->Get(i-1);
+			}
+			if (parent) 
+			{
+				result->Add(parent);
+			}
+		}
+
+		result->Add(initial->Get(size-1));
+		return result;
+	}
 	DecayChain * MCOperator::Construct(string name, int pdg, vector<MESONS> typeOfProducts)
 	{
 		DecayChain * result = new DecayChain(name, pdg);
@@ -25,7 +55,7 @@ namespace TTbarAnalysis
 			{
 				if (CheckForUnification(particle, pdg)) 
 				{
-					std::cout << "WARNING: found a quark-antiquark merging!\n";
+		//			std::cout << "WARNING: found a quark-antiquark merging!\n";
 					continue;
 				}
 				for (int j = 0; j < typeOfProducts.size(); j++) 
@@ -140,7 +170,7 @@ namespace TTbarAnalysis
 	MCParticle * MCOperator::GetConsistentDaughter(MCParticle * parent, MCParticle * service, MESONS type)
 	{
 		vector< MCParticle * > daughters = SelectDaughtersOfType(service, type); //service->getDaughters();
-		std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
+		//std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
 		int size = daughters.size();
 		float angle[size];
 		if (size == 1) 
@@ -150,24 +180,24 @@ namespace TTbarAnalysis
 		for (int i = 0; i < size; i++) 
 		{
 			MCParticle * daughter = daughters[i];
-			std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
+		//	std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
 			if (daughter->getEnergy() > parent->getEnergy())// || 
 			{
 				continue;
 			}
 			if (daughter->getCharge()*parent->getCharge() > 0.0)
 			{
-				std::cout << "Same sign of charge!\n";
+		//		std::cout << "Same sign of charge!\n";
 				return daughter;
 			}
 			angle[i] = MathOperator::getAngle(daughter->getMomentum(), parent->getMomentum());
 		}
 		float minAngle = myAngleCut;
 		int winner = -1;
-		std::cout << "Checking angles...\n";
+		//std::cout << "Checking angles...\n";
 		for (int i = 0; i < size; i++) 
 		{
-			std::cout << "Angle " << i << ": " << angle[i] << '\n';
+			//std::cout << "Angle " << i << ": " << angle[i] << '\n';
 			if (angle[i] < minAngle && 
 			   daughters[i]->getEnergy() < parent->getEnergy() &&
 			   daughters[i]->getCharge()*parent->getCharge() > -0.0001) 
@@ -178,15 +208,15 @@ namespace TTbarAnalysis
 		}
 		if (winner > -1) 
 		{
-			std::cout << "Choosing angle " << winner <<  "\n";
+			//std::cout << "Choosing angle " << winner <<  "\n";
 			if (daughters[winner]->getCharge()*parent->getCharge() < -0.0001) 
 			{
-				std::cout << "FATAL: Charge is wrong!\n";
+				//std::cout << "FATAL: Charge is wrong!\n";
 				
 			}
 			return daughters[winner];
 		}
-		std::cout << "Angle is wrong!\n";
+		//std::cout << "Angle is wrong!\n";
 		return NULL;
 	}
 	MESONS MCOperator::GetParticleType(MCParticle * particle)
@@ -277,7 +307,7 @@ namespace TTbarAnalysis
 			return NULL;
 		}
 		//std::cout<<"Checking " << daughters.size() <<" I gen of daughters. \n";
-		MCParticle * result;
+		MCParticle * result = NULL;
 		int count = 0;
 		for (int i = 0; i < daughters.size(); i++) 
 		{
@@ -415,15 +445,15 @@ namespace TTbarAnalysis
 				countAntiparticle++;
 			}
 		}
-		std::cout<<"INFO: " << countParticle << " t-quarks and " << countAntiparticle << " tbar-quarks\n";
+		std::cout<<"INFO: " << countParticle << " quarks and " << countAntiparticle << " antiquarks\n";
 		return countParticle && countAntiparticle;
 	}
-	vector< MCParticle * > MCOperator::SelectStableCloseDaughters(MCParticle * parent, bool discardCharmedMesons)
+	vector< MCParticle * > MCOperator::SelectStableCloseDaughters(MCParticle * parent,int excludePDG)// bool discardCharmedMesons)
 	{
 		vector< MCParticle * > result;
 		if (!parent || 
 		    CheckParticle(parent, NONTRACKABLE_PARTICLES) ||
-		    (CheckParticle(parent, CHARMED_MESONS) && discardCharmedMesons)) 
+		    parent->getPDG() == excludePDG)//(CheckParticle(parent, CHARMED_MESONS) && discardCharmedMesons)) 
 		{
 			return result;
 		}
@@ -453,7 +483,7 @@ namespace TTbarAnalysis
 			}
 			else 
 			{
-				vector< MCParticle * > grannies = SelectStableCloseDaughters(daughter, discardCharmedMesons);
+				vector< MCParticle * > grannies = SelectStableCloseDaughters(daughter, excludePDG);
 				for (int j = 0; j < grannies.size(); j++) 
 				{
 					result.push_back(grannies[j]);
@@ -493,5 +523,34 @@ namespace TTbarAnalysis
 			return false;
 		}
 		return true;
+	}
+	vector< MCParticle * > MCOperator::CheckDaughterVisibility(vector< MCParticle * > & daughters)
+	{
+		int size = daughters.size();
+		vector< MCParticle * > filtered;
+		double ip[3];
+		ip[0] = 0.0;
+		ip[1] = 0.0;
+		ip[2] = 0.0;
+		for (int i = 0; i < size; i++) 
+		{
+			MCParticle * daughter = daughters[i];
+			vector< float > direction = MathOperator::getDirection(daughter->getMomentum());
+			float offset = MathOperator::getDistanceTo(ip, direction, daughter->getVertex());
+			float pt = MathOperator::getPt(daughter->getMomentum());
+			float p = MathOperator::getModule(daughter->getMomentum());
+			float eta = MathOperator::getRapidity(daughter->getMomentum());
+			std::cout << "\tPDG: " << daughter->getPDG()
+				  << " p: " << p
+				  << " pt: " << pt
+				  << " eta: " << eta
+				  << " offset: " << offset
+				  << '\n';
+			if (offset > 0.01 && abs(eta) < 4 && p > 0.6) 
+			{
+				filtered.push_back(daughter);
+			}
+		}
+		return filtered;
 	}
 } /*  */

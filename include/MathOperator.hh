@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <cmath>
 #include <vector>
+#include <iostream>
 namespace TTbarAnalysis 
 {
 	class MathOperator 
@@ -41,8 +42,14 @@ namespace TTbarAnalysis
 			static std::vector< float > getDirection(std::vector< int > & vectorPoint1, std::vector< int > & vectorPoint2);
 			static std::vector< float > getDirection(const double * vectorPoint1, const double * vectorPoint2);
 			static std::vector< float > getDirection(const double * vectorPoint1);
+			static std::vector< float > getDirection(const float * vectorPoint1);
 			static std::vector< std::vector< int > * > * GetMagicNumbers();
 			static std::vector< int > * getPoint(int x, int y, int z);
+			static float getPt(const double * momentum);
+			static float getRapidity(const double * momentum);
+			static double * getPtOnVector(const double * momentum, const float * target);
+			static double getMissingPt(std::vector< const double * > & vectors, const float * target);
+			static double * toDoubleArray(const float * target, int size);
 		//
 		//	Templates
 		//

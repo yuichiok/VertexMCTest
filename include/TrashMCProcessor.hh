@@ -64,6 +64,9 @@ namespace TTbarAnalysis
 
 	  void WriteVertexCollection(LCEvent * evt, std::vector< Vertex * > * bvertexes, std::vector< Vertex * > * bbarvertexes);
 	  void Write(MCOperator & opera, DecayChain * chain, int & number);
+	  void Write(MCOperator & opera,DecayChain * chain, std::vector< Vertex * > * bvertexes);
+	  void Write(std::vector< MCParticle * > particle , int v);
+	  double getMissingPt(std::vector< MCParticle * > & bdaugthers, std::vector< MCParticle * > & cdaughters, Vertex * vertex);
 	  void ClearVariables(); 
 	 protected:
 	
@@ -76,15 +79,22 @@ namespace TTbarAnalysis
 	  int _tagParameter;
 	  float _aParameter;
 	  float _bParameter;
+	  int _writeBonlyParameter;
 	  TFile * _hfile;
 	  TTree * _hTree;
 	  TTree * _hVertexTree;
+	  TTree * _hTrackTree;
 	  std::string _hfilename ;
-
+	  
 	  int _tag;
 	  int _numberOfB0;
 	  float _firstVertexDistance[2];
 	  float _secondVertexDistance[2];
+	  int _totalBcharge;
+	  int _ccharge;
+	  int _cbarcharge;
+	  int _bcharge;
+	  int _bbarcharge;
 	  float _baccuracy;
 	  float _bbaraccuracy;
 	  float _bIPdistance;
@@ -105,6 +115,14 @@ namespace TTbarAnalysis
 	  int _bbarnumber;
 	  int _cnumber;
 	  int _cbarnumber;
+	  int _btotalnumber;
+	  int _bbartotalnumber;
+	  int _bnumber_f;
+	  int _bbarnumber_f;
+	  int _cnumber_f;
+	  int _cbarnumber_f;
+	  float _bptmiss;
+	  float _bbarptmiss;
 
 	  static const int MAXV = 15;
 	  int _numberOfVertexes;
@@ -118,7 +136,18 @@ namespace TTbarAnalysis
 	  float _momentumOfParticles[MAXV][MAXV];
 	  float _massOfParticles[MAXV][MAXV];
 	
-
+	  float _bptrack[MAXV];
+	  float _betatrack[MAXV];
+	  float _boffsettrack[MAXV];
+	  float _bbarptrack[MAXV];
+	  float _bbaretatrack[MAXV];
+	  float _bbaroffsettrack[MAXV];
+	  float _cptrack[MAXV];
+	  float _cetatrack[MAXV];
+	  float _coffsettrack[MAXV];
+	  float _cbarptrack[MAXV];
+	  float _cbaretatrack[MAXV];
+	  float _cbaroffsettrack[MAXV];
 	  int _nRun ;
 	  int _nEvt ;
 	} ;
