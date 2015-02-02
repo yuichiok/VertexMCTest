@@ -17,11 +17,17 @@ namespace TTbarAnalysis
         	    _colName ,
            	 std::string("MCParticleSkimmed")
 	    );
-	    registerInputCollection( LCIO::VERTEX,
+	    registerOutputCollection( LCIO::VERTEX,
         	    "OutputCollectionName" , 
 	            "Name of the Vertex collection"  ,
         	    _outputcolName ,
            	 std::string("MCVertex")
+	    );
+	    registerOutputCollection(LCIO::MCPARTICLE,
+	    		"QuarkCollectionName" , 
+	            "Name of the b-quark collection"  ,
+        	    _outputquarkcolName,
+           	 std::string("MCbquarks")
 	    );
 	    _tagParameter = 6;
 	    registerProcessorParameter("tagPDG" , 
@@ -47,8 +53,8 @@ namespace TTbarAnalysis
         	    _writeBonlyParameter,
            	 _writeBonlyParameter
 	    );
-		_pdgs.push_back(BOTTOM_MESONS);
-		_pdgs.push_back(CHARMED_MESONS);
+		_pdgs.push_back(BOTTOM_HADRONS);
+	//	_pdgs.push_back(CHARMED_MESONS);
 		_pdgs.push_back(EXCEPTIONAL_MESONS);
 	}	
 
@@ -175,6 +181,19 @@ namespace TTbarAnalysis
 			PrintParticle(chain->at(i));
 		}
 	}
+	void TrashMCProcessor::WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks)
+	{
+		std::cout<< "HERE!!!!\n";
+		IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE ) ;
+		if (quarks.size() == 2) 
+		{
+			//std::cout << "PDG: " << quarks[0]->getPDG() << '\n';
+			//std::cout << "PDG: " << quarks[1]->getPDG() << '\n';
+			mc->addElement(quarks[0]);
+			mc->addElement(quarks[1]);
+		}
+		evt->addCollection( mc , _outputquarkcolName ) ;
+	}
 
 	void TrashMCProcessor::processEvent( LCEvent * evt ) 
 	{ 
@@ -185,19 +204,8 @@ namespace TTbarAnalysis
 			MCOperator opera(col);
 			VertexMCOperator vertexOperator;
 	 		_tag = opera.CheckProcessForPair(_tagParameter);
+			vector< MCParticle * > bquarks = opera.GetPairParticles(_pdgs[0]);
 			_nEvt ++ ;
-			if (!_tag) 
-			{
-			//	return;
-			}
-			/**for (int i = 0; i < col->getNumberOfElements(); i++) 
-			{
-				MCParticle * particle = dynamic_cast<MCParticle*>( col->getElementAt(i) ) ;
-				if (opera.CheckParticle(particle, CHARMED_MESONS) && particle->getPDG() > 0) 
-				{
-					_totalBcharge = particle->getCharge();
-				}
-			}*/
 			DecayChain * bChainRaw = opera.Construct(string("b-quark decay chain"), 5, _pdgs);
 			DecayChain * bbarChainRaw = opera.Construct(string("bbar-quark decay chain"), -5, _pdgs);
 			DecayChain * bChain = opera.RefineDecayChain(bChainRaw, _pdgs);
@@ -212,18 +220,19 @@ namespace TTbarAnalysis
 			{
 				_bmomentum = MathOperator::getModule(bChain->Get(0)->getMomentum());
 				_baccuracy = opera.GetAccuracy(bChain->Get(0), _aParameter, _bParameter); 
-				_cmomentum = MathOperator::getModule(bChain->Get(1)->getMomentum());
-				_caccuracy = opera.GetAccuracy(bChain->Get(1), _aParameter, _bParameter);
+				//_cmomentum = MathOperator::getModule(bChain->Get(1)->getMomentum());
+				//_caccuracy = opera.GetAccuracy(bChain->Get(1), _aParameter, _bParameter);
 			}
 			if (bbarChain && bbarChain->Get(0) && bbarChain->GetSize() > 1) 
 			{
 				_bbarmomentum = MathOperator::getModule(bbarChain->Get(0)->getMomentum());
 				_bbaraccuracy = opera.GetAccuracy(bbarChain->Get(0), _aParameter, _bParameter); 
-				_cbarmomentum = MathOperator::getModule(bbarChain->Get(1)->getMomentum());
-				_cbaraccuracy = opera.GetAccuracy(bbarChain->Get(1), _aParameter, _bParameter); 
+				//_cbarmomentum = MathOperator::getModule(bbarChain->Get(1)->getMomentum());
+				//_cbaraccuracy = opera.GetAccuracy(bbarChain->Get(1), _aParameter, _bParameter); 
 			}
 			std::cout<<"Total b number: " << _btotalnumber << '\n';
 			std::cout<<"Total bbar number: " << _bbartotalnumber << '\n';
+			WriteQuarksCollection(evt, bquarks);
 			WriteVertexCollection(evt, bverticies, bbarverticies);
 			int number = 0;
 			Write(opera,bbarChain,number);
@@ -255,45 +264,45 @@ namespace TTbarAnalysis
 		}
 		if (chain->GetParentPDG() > 0) 
 		{
-			vector< MCParticle * > daughters = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG()); //opera.ScanForVertexParticles(bverticies->at(0)->getPosition(), 1e-3);
+			vector< MCParticle * > daughters = opera.SelectStableCloseDaughters(chain->Get(0));//, chain->Get(1)->getPDG()); //opera.ScanForVertexParticles(bverticies->at(0)->getPosition(), 1e-3);
+			_bcharge = (int)chain->Get(0)->getCharge();
 			_bnumber = daughters.size();
-			_bIPdistance = verticies->at(0)->getParameters()[0];
-			std::cout<<"Vertex b-quark: " << verticies->at(0)->getParameters()[0]<< " n-tracks: " << _bnumber << '\n';
-			vector< MCParticle * > cdaughters =opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bverticies->at(1)->getPosition(), 1e-3);
-			_cnumber = cdaughters.size();
 			_bnumber_f = opera.CheckDaughterVisibility(daughters).size();
+			_bIPdistance = verticies->at(0)->getParameters()[0];
 			Write(daughters, 1);
-			Write(cdaughters, 2);
-			std::cout<<"Vertex c-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " << _cnumber <<  '\n';
+			std::cout<<"Vertex b-quark: " << verticies->at(0)->getParameters()[0]<< " n-tracks: " << _bnumber << '\n';
+			vector< MCParticle * > cdaughters;// =opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bverticies->at(1)->getPosition(), 1e-3);
+			_cnumber = cdaughters.size();
 			_cnumber_f = opera.CheckDaughterVisibility(cdaughters).size();
-			_bdistance = MathOperator::getDistance(verticies->at(1)->getPosition(), verticies->at(0)->getPosition());
+			//Write(cdaughters, 2);
+			//std::cout<<"Vertex c-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " << _cnumber <<  '\n';
+			//_bdistance = MathOperator::getDistance(verticies->at(1)->getPosition(), verticies->at(0)->getPosition());
 			_btotalnumber = _cnumber + _bnumber;
 			std::cout<<"Checking b-quark meson...\n";
-			bool compatible = opera.CheckCompatibility(daughters, chain->Get(0), chain->Get(1)->getCharge());
+			//bool compatible = opera.CheckCompatibility(daughters, chain->Get(0), chain->Get(1)->getCharge());
 				
 			std::cout<<"Checking c-quark meson...\n";
-			compatible = opera.CheckCompatibility(cdaughters, chain->Get(1));
+			//compatible = opera.CheckCompatibility(cdaughters, chain->Get(1));
 			_bptmiss = getMissingPt(daughters, cdaughters, verticies->at(0));
 			std::cout<<"Missing pt for b-quark hadron: " << _bptmiss << "\n";	
-			_ccharge = (int)chain->Get(1)->getCharge();
-			_bcharge = (int)chain->Get(0)->getCharge();
+			//_ccharge = (int)chain->Get(1)->getCharge();
 		}
 		if (chain->GetParentPDG() < 0) 
 		{
-			vector< MCParticle * > daughters =opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG()); // opera.ScanForVertexParticles(bbarverticies->at(0)->getPosition(), 1e-3);
+			vector< MCParticle * > daughters =opera.SelectStableCloseDaughters(chain->Get(0));//, chain->Get(1)->getPDG()); // opera.ScanForVertexParticles(bbarverticies->at(0)->getPosition(), 1e-3);
+			Write(daughters, -1);
+			_bbarcharge = (int) chain->Get(0)->getCharge();
 			_bbarnumber = daughters.size();
 			_bbarIPdistance = verticies->at(0)->getParameters()[0];
-		        std::cout<<"Vertex bbar-quark"<< 0 <<": " << verticies->at(0)->getParameters()[0] <<" n-tracks: " << _bbarnumber <<  '\n';
 			_bbarnumber_f = opera.CheckDaughterVisibility(daughters).size();
-			vector< MCParticle * > cdaughters = opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bbarverticies->at(1)->getPosition(), 1e-3);
+		        std::cout<<"Vertex bbar-quark"<< 0 <<": " << verticies->at(0)->getParameters()[0] <<" n-tracks: " << _bbarnumber <<  '\n';
+			vector< MCParticle * > cdaughters;// = opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bbarverticies->at(1)->getPosition(), 1e-3);
 			_cbarnumber = cdaughters.size();
-			std::cout<<"Vertex cbar-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " <<_cbarnumber << '\n';
-			_cbarnumber_f = opera.CheckDaughterVisibility(cdaughters).size();
-			_bbardistance = MathOperator::getDistance(verticies->at(1)->getPosition(), verticies->at(0)->getPosition());
+			//std::cout<<"Vertex cbar-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " <<_cbarnumber << '\n';
+			//_cbarnumber_f = opera.CheckDaughterVisibility(cdaughters).size();
+			//_bbardistance = MathOperator::getDistance(verticies->at(1)->getPosition(), verticies->at(0)->getPosition());
 			_bbartotalnumber = _cbarnumber + _bbarnumber;
-			_cbarcharge = (int) chain->Get(1)->getCharge();
-			_bbarcharge = (int) chain->Get(0)->getCharge();
-			Write(daughters, -1);
+			//_cbarcharge = (int) chain->Get(1)->getCharge();
 			Write(cdaughters, -2);
 			_bbarptmiss = getMissingPt(daughters, cdaughters, verticies->at(0));
 			std::cout<<"Missing pt for bbar-quark hadron: " << _bbarptmiss << "\n";	
@@ -362,7 +371,7 @@ namespace TTbarAnalysis
 			offset[i] = MathOperator::getDistanceTo(ip, direction, daughter->getVertex());
 			//float pt[i] = MathOperator::getPt(daughter->getMomentum());
 			p[i] = MathOperator::getModule(daughter->getMomentum());
-			eta[i] = MathOperator::getRapidity(daughter->getMomentum());
+			eta[i] = MathOperator::getAngles(direction)[1];
 
 		}
 	}

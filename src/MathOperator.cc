@@ -327,11 +327,11 @@ namespace TTbarAnalysis
 	double * MathOperator::getPtOnVector(const double * momentum, const float * target)
 	{
 		double * converted = toDoubleArray(target, 3);
-		for (int i = 0; i < 3; i++) 
+		/*for (int i = 0; i < 3; i++) 
 		{
 			std::cout << i << ": " << converted[i];
 		}
-		std::cout << '\n';
+		std::cout << '\n';*/
 		vector< float > direction = getDirection(converted);
 		double pt[3];
 		double product = 0.0;
@@ -343,7 +343,7 @@ namespace TTbarAnalysis
 		{
 			pt[i] = momentum[i] - direction[i] * product;
 		}
-		std::cout << "Pl: " << product << " |Pt|: " << getModule(pt) << '\n';
+		//std::cout << "Pl: " << product << " |Pt|: " << getModule(pt) << '\n';
 		return pt;
 	}
 	double MathOperator::getMissingPt(vector< const double * > & vectors, const float * target)

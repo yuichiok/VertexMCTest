@@ -67,6 +67,7 @@ namespace TTbarAnalysis
 	  void Write(MCOperator & opera,DecayChain * chain, std::vector< Vertex * > * bvertexes);
 	  void Write(std::vector< MCParticle * > particle , int v);
 	  double getMissingPt(std::vector< MCParticle * > & bdaugthers, std::vector< MCParticle * > & cdaughters, Vertex * vertex);
+	  void WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks);
 	  void ClearVariables(); 
 	 protected:
 	
@@ -74,6 +75,7 @@ namespace TTbarAnalysis
 	   */
 	  std::string _colName ;
 	  std::string _outputcolName;
+	  std::string _outputquarkcolName;
 	  std::vector<MESONS> _pdgs;
 	  
 	  int _tagParameter;

@@ -3,6 +3,7 @@ using std::vector;
 using std::string;
 using EVENT::LCCollection;
 using EVENT::MCParticle;
+using IMPL::MCParticleImpl;
 namespace TTbarAnalysis
 {
 	MCOperator:: MCOperator (LCCollection * col)
@@ -11,7 +12,7 @@ namespace TTbarAnalysis
 		myPrimaryVertex[0] = 0.0;
 		myPrimaryVertex[1] = 0.0;
 		myPrimaryVertex[2] = 0.0;
-		myAngleCut = 0.7854; // \pi/4
+		myAngleCut = 0.784; // \pi/4
 	}
 	DecayChain * MCOperator::RefineDecayChain(DecayChain * initial, vector<MESONS> typeOfProducts)
 	{
@@ -170,37 +171,39 @@ namespace TTbarAnalysis
 	MCParticle * MCOperator::GetConsistentDaughter(MCParticle * parent, MCParticle * service, MESONS type)
 	{
 		vector< MCParticle * > daughters = SelectDaughtersOfType(service, type); //service->getDaughters();
-		//std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
+		std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
 		int size = daughters.size();
 		float angle[size];
 		if (size == 1) 
 		{
 			 //std::cout << "We have only 1 meson of type " << type << '\n';
 		}
+		float dE = 1.0;
 		for (int i = 0; i < size; i++) 
 		{
 			MCParticle * daughter = daughters[i];
-		//	std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
-			if (daughter->getEnergy() > parent->getEnergy())// || 
+			std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
+			if (daughter->getEnergy() > parent->getEnergy()+dE)// || 
 			{
-				continue;
+				//std::cout << "Discarded by energy!\n";
+				//continue;
 			}
-			if (daughter->getCharge()*parent->getCharge() > 0.0)
+			if (daughter->getCharge()*parent->getCharge() > 0.0 && type != BOTTOM_HADRONS && type != BOTTOM_BARYONS)
 			{
-		//		std::cout << "Same sign of charge!\n";
+				std::cout << "Same sign of charge!\n";
 				return daughter;
 			}
 			angle[i] = MathOperator::getAngle(daughter->getMomentum(), parent->getMomentum());
 		}
 		float minAngle = myAngleCut;
 		int winner = -1;
-		//std::cout << "Checking angles...\n";
+		std::cout << "Checking angles...\n";
 		for (int i = 0; i < size; i++) 
 		{
-			//std::cout << "Angle " << i << ": " << angle[i] << '\n';
+			std::cout << "Angle " << i << ": " << angle[i] << '\n';
 			if (angle[i] < minAngle && 
-			   daughters[i]->getEnergy() < parent->getEnergy() &&
-			   daughters[i]->getCharge()*parent->getCharge() > -0.0001) 
+			   //daughters[i]->getEnergy() < parent->getEnergy()+dE &&
+			   (daughters[i]->getCharge()*parent->getCharge() > -0.0001 || type != BOTTOM_HADRONS || type != BOTTOM_BARYONS)) 
 			{
 				minAngle = angle[i];
 				winner = i;
@@ -208,15 +211,15 @@ namespace TTbarAnalysis
 		}
 		if (winner > -1) 
 		{
-			//std::cout << "Choosing angle " << winner <<  "\n";
-			if (daughters[winner]->getCharge()*parent->getCharge() < -0.0001) 
+			std::cout << "Choosing angle " << winner <<  "\n";
+			if (daughters[winner]->getCharge()*parent->getCharge() < -0.0001  && type != BOTTOM_HADRONS && type != BOTTOM_BARYONS) 
 			{
-				//std::cout << "FATAL: Charge is wrong!\n";
+				std::cout << "FATAL: Charge is wrong!\n";
 				
 			}
 			return daughters[winner];
 		}
-		//std::cout << "Angle is wrong!\n";
+		std::cout << "Angle is wrong!\n";
 		return NULL;
 	}
 	MESONS MCOperator::GetParticleType(MCParticle * particle)
@@ -423,6 +426,60 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
+	vector< MCParticle * > MCOperator::GetPairParticles(int pdg)
+	{
+		pdg = abs(pdg);
+		vector< MCParticle * > pair;
+		if (pdg < 1) 
+		{
+			return pair;
+		}
+		int number = myCollection->getNumberOfElements();
+		MCParticle * b = NULL;
+		MCParticle * bbar = NULL;
+		for (int i = 0; i < number; i++) 
+		{
+			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) );
+			if (particle->getPDG() == pdg)// && countParticle == 0) 
+			{
+				b = particle;
+			}
+			if (particle->getPDG() == -pdg)// && countAntiparticle == 0) 
+			{
+				bbar =  particle;
+			}
+		}
+		if (b) 
+		{
+			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*b)));
+			std::cout<<"INFO: Found b!\n";
+		}
+		if (bbar) 
+		{
+			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*bbar)));
+			std::cout<<"INFO: Found bbar!\n";
+		}
+		return pair;
+	}
+	vector< MCParticle * > MCOperator::GetPairParticles(MESONS type)
+	{
+		vector< MCParticle * > pair;
+		int number = myCollection->getNumberOfElements();
+		for (int i = 0; i < number; i++) 
+		{
+			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) );
+			if (CheckParticle(particle, type) && particle->getParents()[0]->getPDG() == 92) 
+			{
+				pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*particle)));
+				std::cout<<"Found a suitable particle of type " << particle->getPDG() << '\n';
+			}
+			if (pair.size() > 1) 
+			{
+				break;
+			}
+		}
+		return pair;
+	}
 	bool MCOperator::CheckProcessForPair(int pdg)
 	{
 		pdg = abs(pdg);
@@ -539,11 +596,11 @@ namespace TTbarAnalysis
 			float offset = MathOperator::getDistanceTo(ip, direction, daughter->getVertex());
 			float pt = MathOperator::getPt(daughter->getMomentum());
 			float p = MathOperator::getModule(daughter->getMomentum());
-			float eta = MathOperator::getRapidity(daughter->getMomentum());
+			float eta = MathOperator::getAngles(direction)[1];
 			std::cout << "\tPDG: " << daughter->getPDG()
 				  << " p: " << p
 				  << " pt: " << pt
-				  << " eta: " << eta
+				  << " teta: " << eta
 				  << " offset: " << offset
 				  << '\n';
 			if (offset > 0.01 && abs(eta) < 4 && p > 0.6) 

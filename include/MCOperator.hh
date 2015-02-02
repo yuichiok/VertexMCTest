@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <EVENT/MCParticle.h>
+#include <IMPL/MCParticleImpl.h>
 #include <EVENT/LCCollection.h>
 #include "DecayChain.hh"
 #include "ConstantStorage.hh"
@@ -28,6 +29,8 @@ namespace TTbarAnalysis
 		//	Methods
 		//
 			bool CheckProcessForPair(int pdg);
+			std::vector< EVENT::MCParticle * > GetPairParticles(int pdg);
+			std::vector< EVENT::MCParticle * > GetPairParticles(MESONS type);
 			float GetAccuracy(EVENT::MCParticle * particle, float a, float b);
 			DecayChain * Construct(std::string name, int pdg, std::vector<MESONS> typeOfProducts);
 			bool CheckForUnification(EVENT::MCParticle * particle, int pdg);
