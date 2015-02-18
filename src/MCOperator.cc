@@ -171,7 +171,7 @@ namespace TTbarAnalysis
 	MCParticle * MCOperator::GetConsistentDaughter(MCParticle * parent, MCParticle * service, MESONS type)
 	{
 		vector< MCParticle * > daughters = SelectDaughtersOfType(service, type); //service->getDaughters();
-		std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
+		//std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
 		int size = daughters.size();
 		float angle[size];
 		if (size == 1) 
@@ -182,7 +182,7 @@ namespace TTbarAnalysis
 		for (int i = 0; i < size; i++) 
 		{
 			MCParticle * daughter = daughters[i];
-			std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
+			//std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
 			if (daughter->getEnergy() > parent->getEnergy()+dE)// || 
 			{
 				//std::cout << "Discarded by energy!\n";
@@ -190,17 +190,17 @@ namespace TTbarAnalysis
 			}
 			if (daughter->getCharge()*parent->getCharge() > 0.0 && type != BOTTOM_HADRONS && type != BOTTOM_BARYONS)
 			{
-				std::cout << "Same sign of charge!\n";
+				//std::cout << "Same sign of charge!\n";
 				return daughter;
 			}
 			angle[i] = MathOperator::getAngle(daughter->getMomentum(), parent->getMomentum());
 		}
 		float minAngle = myAngleCut;
 		int winner = -1;
-		std::cout << "Checking angles...\n";
+		//std::cout << "Checking angles...\n";
 		for (int i = 0; i < size; i++) 
 		{
-			std::cout << "Angle " << i << ": " << angle[i] << '\n';
+			//std::cout << "Angle " << i << ": " << angle[i] << '\n';
 			if (angle[i] < minAngle && 
 			   //daughters[i]->getEnergy() < parent->getEnergy()+dE &&
 			   (daughters[i]->getCharge()*parent->getCharge() > -0.0001 || type != BOTTOM_HADRONS || type != BOTTOM_BARYONS)) 
@@ -211,15 +211,15 @@ namespace TTbarAnalysis
 		}
 		if (winner > -1) 
 		{
-			std::cout << "Choosing angle " << winner <<  "\n";
+			//std::cout << "Choosing angle " << winner <<  "\n";
 			if (daughters[winner]->getCharge()*parent->getCharge() < -0.0001  && type != BOTTOM_HADRONS && type != BOTTOM_BARYONS) 
 			{
-				std::cout << "FATAL: Charge is wrong!\n";
+			//	std::cout << "FATAL: Charge is wrong!\n";
 				
 			}
 			return daughters[winner];
 		}
-		std::cout << "Angle is wrong!\n";
+		//std::cout << "Angle is wrong!\n";
 		return NULL;
 	}
 	MESONS MCOperator::GetParticleType(MCParticle * particle)

@@ -65,9 +65,11 @@ namespace TTbarAnalysis
 	  void WriteVertexCollection(LCEvent * evt, std::vector< Vertex * > * bvertexes, std::vector< Vertex * > * bbarvertexes);
 	  void Write(MCOperator & opera, DecayChain * chain, int & number);
 	  void Write(MCOperator & opera,DecayChain * chain, std::vector< Vertex * > * bvertexes);
+	  void AddProngs( VertexMCOperator & vertexOperator, MCOperator & opera, DecayChain * chain, std::vector< Vertex * > * vertices);
 	  void Write(std::vector< MCParticle * > particle , int v);
 	  double getMissingPt(std::vector< MCParticle * > & bdaugthers, std::vector< MCParticle * > & cdaughters, Vertex * vertex);
 	  void WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks);
+	  void ExtractStarParticles(LCEvent * evt, MCOperator opera,  DecayChain * bChainRaw, DecayChain * bChain, int v);
 	  void ClearVariables(); 
 	 protected:
 	
@@ -77,7 +79,8 @@ namespace TTbarAnalysis
 	  std::string _outputcolName;
 	  std::string _outputquarkcolName;
 	  std::vector<MESONS> _pdgs;
-	  
+	  std::string _outputBStarName; 
+	  std::string _outputBbarStarName; 
 	  int _tagParameter;
 	  float _aParameter;
 	  float _bParameter;
@@ -86,6 +89,7 @@ namespace TTbarAnalysis
 	  TTree * _hTree;
 	  TTree * _hVertexTree;
 	  TTree * _hTrackTree;
+	  TTree * _hBStarTree;
 	  std::string _hfilename ;
 	  
 	  int _tag;
@@ -126,6 +130,7 @@ namespace TTbarAnalysis
 	  float _bptmiss;
 	  float _bbarptmiss;
 
+	
 	  static const int MAXV = 15;
 	  int _numberOfVertexes;
 	  float _distanceFromIP[MAXV];
@@ -150,6 +155,11 @@ namespace TTbarAnalysis
 	  float _cbarptrack[MAXV];
 	  float _cbaretatrack[MAXV];
 	  float _cbaroffsettrack[MAXV];
+
+	  int _bstarnumber;
+	  float _bstarmomentum[MAXV];
+	  float _bstaroffset[MAXV];
+	  double ip[3];
 	  int _nRun ;
 	  int _nEvt ;
 	} ;

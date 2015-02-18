@@ -3,6 +3,7 @@ using EVENT::Vertex;
 using std::vector;
 using std::string;
 using EVENT::MCParticle;
+using EVENT::ReconstructedParticle;
 using IMPL::VertexImpl;
 using IMPL::ReconstructedParticleImpl;
 namespace TTbarAnalysis 
@@ -47,6 +48,22 @@ namespace TTbarAnalysis
 
 		return result;
 	}
+	void VertexMCOperator::AddProngs(Vertex * vertex, vector< MCParticle * > & particles)
+	{
+		if (!vertex || particles.size() == 0) 
+		{
+			std::cout << "ERRORMC: argument is null!\n";
+			return;
+		}
+		ReconstructedParticle * reco = vertex->getAssociatedParticle();
+		for (unsigned int i = 0; i < particles.size(); i++) 
+		{
+			ReconstructedParticle * prong = translate(particles[i]);
+			reco->addParticle(prong);
+		}
+		//std::cout << "Added " << reco->getParticles().size() << " particles!\n";
+
+	}
 	void VertexMCOperator::addParticle(Vertex * vertex, MCParticle * particle)
 	{
 		if (!vertex || !particle) 
@@ -54,17 +71,18 @@ namespace TTbarAnalysis
 			std::cout << "ERRORMC: argument is null!\n";
 			return;
 		}
+		ReconstructedParticle * reco = translate(particle);
+		VertexImpl * ivertex = static_cast<VertexImpl*>(vertex);
+		ivertex->setAssociatedParticle(reco);
+	}
+	ReconstructedParticle * VertexMCOperator::translate(EVENT::MCParticle * particle)
+	{
 		ReconstructedParticleImpl * reco = new ReconstructedParticleImpl();
 		reco->setType(particle->getPDG());
 		reco->setMass(particle->getMass());
 		reco->setCharge(particle->getCharge());
 		reco->setMomentum(particle->getMomentum());
 		reco->setEnergy(particle->getEnergy());
-		VertexImpl * ivertex = static_cast<VertexImpl*>(vertex);
-		ivertex->setAssociatedParticle(reco);
-		if (vertex->getAssociatedParticle()) 
-		{
-			std::cout << "Particle attached!\n";
-		}
+		return reco;
 	}
 } /* TTbarAnalysis */

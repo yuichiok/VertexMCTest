@@ -25,6 +25,7 @@ namespace TTbarAnalysis
 		//	Methods
 		//
 			std::vector< EVENT::Vertex * > * Construct(DecayChain * chain);
+			void AddProngs(EVENT::Vertex * vertex, std::vector< EVENT::MCParticle * > & particles);
 		private:
 		//
 		//	Data
@@ -35,6 +36,7 @@ namespace TTbarAnalysis
 		//
 			EVENT::Vertex * construct(EVENT::MCParticle * particle, const double * ip, int pdg, int number);
 			void addParticle(EVENT::Vertex * vertex, EVENT::MCParticle * particle);
+			EVENT::ReconstructedParticle * translate(EVENT::MCParticle * particle);
 	};
 }
 #endif
