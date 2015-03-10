@@ -70,6 +70,7 @@ namespace TTbarAnalysis
 	  double getMissingPt(std::vector< MCParticle * > & bdaugthers, std::vector< MCParticle * > & cdaughters, Vertex * vertex);
 	  void WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks);
 	  void ExtractStarParticles(LCEvent * evt, MCOperator opera,  DecayChain * bChainRaw, DecayChain * bChain, int v);
+	  void WriteMisReco(std::vector< MCParticle * > * particles);
 	  void ClearVariables(); 
 	 protected:
 	
@@ -78,9 +79,10 @@ namespace TTbarAnalysis
 	  std::string _colName ;
 	  std::string _outputcolName;
 	  std::string _outputquarkcolName;
-	  std::vector<MESONS> _pdgs;
 	  std::string _outputBStarName; 
+	  std::string _colRelName;
 	  std::string _outputBbarStarName; 
+	  std::vector<MESONS> _pdgs;
 	  int _tagParameter;
 	  float _aParameter;
 	  float _bParameter;
@@ -90,6 +92,7 @@ namespace TTbarAnalysis
 	  TTree * _hVertexTree;
 	  TTree * _hTrackTree;
 	  TTree * _hBStarTree;
+	  TTree * _hMisRecoTree;
 	  std::string _hfilename ;
 	  
 	  int _tag;
@@ -155,6 +158,13 @@ namespace TTbarAnalysis
 	  float _cbarptrack[MAXV];
 	  float _cbaretatrack[MAXV];
 	  float _cbaroffsettrack[MAXV];
+
+	  static const int MAXVV = 30;
+	  int _misreconumber;
+	  float _misrecotheta[MAXVV];
+	  float _misrecocostheta[MAXVV];
+	  float _misrecomomentum[MAXVV];
+	  float _misrecopt[MAXVV];
 
 	  int _bstarnumber;
 	  float _bstarmomentum[MAXV];

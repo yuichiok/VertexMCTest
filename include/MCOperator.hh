@@ -9,6 +9,9 @@
 #include "DecayChain.hh"
 #include "ConstantStorage.hh"
 #include "MathOperator.hh"
+#include <UTIL/PIDHandler.h>
+#include <UTIL/LCRelationNavigator.h>
+
 #ifndef _MCOperator_hh
 #define _MCOperator_hh
 namespace TTbarAnalysis 
@@ -23,12 +26,13 @@ namespace TTbarAnalysis
 		//
 		//	Constructors
 		//
-			MCOperator (EVENT::LCCollection * col);
+			MCOperator (EVENT::LCCollection * col, EVENT::LCCollection * rel);
 			virtual ~MCOperator () {};
 		//
 		//	Methods
 		//
 			bool CheckProcessForPair(int pdg);
+			bool IsReconstructed(EVENT::MCParticle * particle);
 			std::vector< EVENT::MCParticle * > GetPairParticles(int pdg);
 			std::vector< EVENT::MCParticle * > GetPairParticles(MESONS type);
 			float GetAccuracy(EVENT::MCParticle * particle, float a, float b);
@@ -42,7 +46,7 @@ namespace TTbarAnalysis
 			bool CheckForColorString(EVENT::MCParticle * daughter, int pdgOfParent);
 			EVENT::MCParticle * GetConsistentDaughter(EVENT::MCParticle * parent, EVENT::MCParticle * service, MESONS type);
 			std::vector< EVENT::MCParticle * > ScanForVertexParticles(const float * vertex, double precision);
-			std::vector< EVENT::MCParticle * > SelectStableCloseDaughters(EVENT::MCParticle * parent,int excludePDG = 0);//, bool discardCharmedMesons = true);
+			std::vector< EVENT::MCParticle * > SelectStableCloseDaughters(EVENT::MCParticle * parent,int excludePDG = 0, bool selectReco = false, std::vector<EVENT::MCParticle *> * misReconstructed = NULL);//
 			std::vector< EVENT::MCParticle * > ScanForVertexParticles(const double * vertex, double precision);
 			bool CheckCompatibility(std::vector< EVENT::MCParticle * > & daughters, EVENT::MCParticle * parent, int plusCharge = 0);
 			DecayChain * RefineDecayChain(DecayChain * initial, std::vector<MESONS> typeOfProducts);
@@ -52,6 +56,7 @@ namespace TTbarAnalysis
 		//	Data
 		//
 			EVENT::LCCollection * myCollection;
+			EVENT::LCCollection * myRelCollection;
 			double myPrimaryVertex[3];
 			float myAngleCut;
 			int myCurrentParentPDG;

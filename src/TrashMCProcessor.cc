@@ -41,6 +41,12 @@ namespace TTbarAnalysis
         	    _outputquarkcolName,
            	 std::string("MCbquarks")
 	    );
+	    registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+	    	"RelCollectionName",
+		"Name of the Jet relation collection",
+		_colRelName,
+	    	std::string("RecoMCTruthLink")
+	    );
 	    _tagParameter = 6;
 	    registerProcessorParameter("tagPDG" , 
 	            "PDG of desired particle"  ,
@@ -110,10 +116,10 @@ namespace TTbarAnalysis
 		_hTree->Branch("bbartotalnumber", &_bbartotalnumber, "bbartotalnumber/I");
 		_hTree->Branch("bptmiss", &_bptmiss, "bptmiss/F");
 		_hTree->Branch("bbarptmiss", &_bbarptmiss, "bbarptmiss/F");
-		//_hTree->Branch("bnumber_f", &_bnumber_f, "bnumber_f/I");
-		//_hTree->Branch("bbarnumber_f", &_bbarnumber_f, "bbarnumber_f/I");
-		//_hTree->Branch("cnumber_f", &_cnumber_f, "cnumber_f/I");
-		//_hTree->Branch("cbarnumber_f", &_cbarnumber_f, "cbarnumber_f/I");
+		_hTree->Branch("bnumber_f", &_bnumber_f, "bnumber_f/I");
+		_hTree->Branch("bbarnumber_f", &_bbarnumber_f, "bbarnumber_f/I");
+		_hTree->Branch("cnumber_f", &_cnumber_f, "cnumber_f/I");
+		_hTree->Branch("cbarnumber_f", &_cbarnumber_f, "cbarnumber_f/I");
 		//_hTree->Branch("firstVertexDistance", _firstVertexDistance, "firstVertexDistance[numberOfB0]/F");
 		//_hTree->Branch("secondVertexDistance", _secondVertexDistance, "secondVertexDistance[numberOfB0]/F");
 		_hVertexTree = new TTree( "Vertices", "My test tree!" );
@@ -153,6 +159,13 @@ namespace TTbarAnalysis
 		_hBStarTree->Branch("bstarnumber",  &_bstarnumber, "bstarnumber/I");
 		_hBStarTree->Branch("bstarmomentum",  _bstarmomentum, "bstarmomentum[bstarnumber]/F");
 		_hBStarTree->Branch("bstaroffset",  _bstaroffset, "bstaroffset[bstarnumber]/F");
+		_hMisRecoTree = new TTree( "Misreco", "My test tree!" );
+		_hMisRecoTree->Branch("misreconumber",  &_misreconumber, "misreconumber/I");
+		_hMisRecoTree->Branch("misrecotheta",  _misrecotheta, "misrecotheta[misreconumber]/F");
+		_hMisRecoTree->Branch("misrecocostheta",  _misrecocostheta, "misrecocostheta[misreconumber]/F");
+		_hMisRecoTree->Branch("misrecomomentum",  _misrecomomentum, "misrecomomentum[misreconumber]/F");
+		_hMisRecoTree->Branch("misrecopt",  _misrecopt, "misrecopt[misreconumber]/F");
+
 	}
 
 
@@ -222,17 +235,18 @@ namespace TTbarAnalysis
 			return;
 		}
 		int vsize = verticies->size();
+		bool useRelation = false;
 		if (vsize > 1) 
 		{
 			vector< MCParticle * > bdaughters = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG());
-			vertexOperator.AddProngs(verticies->at(0), bdaughters);
+			vertexOperator.AddProngs(verticies->at(0), bdaughters, useRelation);
 			vector< MCParticle * > cdaughters = opera.SelectStableCloseDaughters(chain->Get(1));
-			vertexOperator.AddProngs(verticies->at(1), cdaughters);
+			vertexOperator.AddProngs(verticies->at(1), cdaughters, useRelation);
 		}
 		else 
 		{
 			vector< MCParticle * > bdaughters = opera.SelectStableCloseDaughters(chain->Get(0));
-			vertexOperator.AddProngs(verticies->at(0), bdaughters);
+			vertexOperator.AddProngs(verticies->at(0), bdaughters, useRelation);
 		}
 	}
 
@@ -270,8 +284,9 @@ namespace TTbarAnalysis
 		{
 			LCCollection* col = evt->getCollection( _colName );
 			std::cout<< "***********TrashMCProcessor*"<<_nEvt<<"***************\n";
-			MCOperator opera(col);
-			VertexMCOperator vertexOperator;
+			LCCollection* rel = evt->getCollection(_colRelName);
+			MCOperator opera(col,rel);
+			VertexMCOperator vertexOperator(rel);
 	 		_tag = opera.CheckProcessForPair(_tagParameter);
 			vector< MCParticle * > bquarks = opera.GetPairParticles(_pdgs[0]);
 			_nEvt ++ ;
@@ -339,6 +354,7 @@ namespace TTbarAnalysis
 			_cnumber = (_cnumber < 0)? 0: _cnumber;
 			_cbarnumber = (_cbarnumber < 0)? 0: _cbarnumber;
 			_hTrackTree->Fill();
+			_hMisRecoTree->Fill();
 			_hVertexTree->Fill();
 			ClearVariables();
 	
@@ -358,20 +374,23 @@ namespace TTbarAnalysis
 		{
 			PrintParticle(chain->Get(i));
 		}
+		vector< MCParticle * > * misreco = new vector< MCParticle * >();
 		if (chain->GetParentPDG() > 0 && chain->GetSize() > 1) 
 		{
 			vector< MCParticle * > daughters = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG()); //opera.ScanForVertexParticles(bverticies->at(0)->getPosition(), 1e-3);
 			_bcharge = (int)chain->Get(0)->getCharge();
 			_bnumber = daughters.size();
-			_bnumber_f = opera.CheckDaughterVisibility(daughters).size();
+			_bnumber_f = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true, misreco).size();//opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true).size();//opera.CheckDaughterVisibility(daughters).size();
 			_bIPdistance = verticies->at(0)->getParameters()[0];
 			Write(daughters, 1);
 			std::cout<<"Vertex b-quark: " << verticies->at(0)->getParameters()[0]<< " n-tracks: " << _bnumber << '\n';
 			vector< MCParticle * > cdaughters =opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bverticies->at(1)->getPosition(), 1e-3);
 			_cnumber = cdaughters.size();
-			_cnumber_f = opera.CheckDaughterVisibility(cdaughters).size();
+			_cnumber_f = opera.SelectStableCloseDaughters(chain->Get(1),0,true, misreco).size();//opera.CheckDaughterVisibility(cdaughters).size();
+			opera.CheckDaughterVisibility(daughters);
 			Write(cdaughters, 2);
 			std::cout<<"Vertex c-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " << _cnumber <<  '\n';
+			opera.CheckDaughterVisibility(cdaughters);
 			_bdistance = MathOperator::getDistance(verticies->at(1)->getPosition(), verticies->at(0)->getPosition());
 			_btotalnumber = _cnumber + _bnumber;
 			std::cout<<"Checking b-quark meson...\n";
@@ -394,12 +413,14 @@ namespace TTbarAnalysis
 			_bbarcharge = (int) chain->Get(0)->getCharge();
 			_bbarnumber = daughters.size();
 			_bbarIPdistance = verticies->at(0)->getParameters()[0];
-			_bbarnumber_f = opera.CheckDaughterVisibility(daughters).size();
+			_bbarnumber_f = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true,misreco).size();//opera.CheckDaughterVisibility(daughters).size();
 		        std::cout<<"Vertex bbar-quark"<< 0 <<": " << verticies->at(0)->getParameters()[0] <<" n-tracks: " << _bbarnumber <<  '\n';
 			vector< MCParticle * > cdaughters= opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bbarverticies->at(1)->getPosition(), 1e-3);
 			_cbarnumber = cdaughters.size();
+			opera.CheckDaughterVisibility(daughters);
 			std::cout<<"Vertex cbar-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " <<_cbarnumber << '\n';
-			_cbarnumber_f = opera.CheckDaughterVisibility(cdaughters).size();
+			opera.CheckDaughterVisibility(cdaughters);
+			_cbarnumber_f = opera.SelectStableCloseDaughters(chain->Get(1),0,true, misreco).size();//opera.CheckDaughterVisibility(cdaughters).size();
 			_bbardistance = MathOperator::getDistance(verticies->at(1)->getPosition(), verticies->at(0)->getPosition());
 			_bbartotalnumber = _cbarnumber + _bbarnumber;
 			_cbarcharge = (int) chain->Get(1)->getCharge();
@@ -412,6 +433,21 @@ namespace TTbarAnalysis
 			_cbaraccuracy = opera.GetAccuracy(chain->Get(1), _aParameter, _bParameter); 
 
 		}
+		WriteMisReco(misreco);
+	}
+	void TrashMCProcessor::WriteMisReco(vector< MCParticle * > * particles)
+	{
+
+		std::cout << "Misreco: " << _misreconumber << " particles: " << particles->size() << '\n';
+		for (int i = _misreconumber; i < _misreconumber + particles->size(); i++) 
+		{
+			vector< float > direction = MathOperator::getDirection(particles->at(i-_misreconumber)->getMomentum());
+			_misrecotheta[i] = MathOperator::getAngles(direction)[1];
+			_misrecocostheta[i] = std::cos(MathOperator::getAngles(direction)[1]);
+			_misrecomomentum[i] = MathOperator::getModule(particles->at(i-_misreconumber)->getMomentum());
+			_misrecopt[i] = MathOperator::getPt(particles->at(i-_misreconumber)->getMomentum());
+		}
+		_misreconumber += particles->size();
 	}
 	double TrashMCProcessor::getMissingPt(vector< MCParticle * > & bdaugthers, vector< MCParticle * > & cdaughters, Vertex * vertex)
 	{
@@ -497,6 +533,7 @@ namespace TTbarAnalysis
 
 	void TrashMCProcessor::ClearVariables()
 	{
+		_misreconumber = 0;
 		_tag = false;
 		_bstarnumber = 0;
 	  	_bptmiss = -1.0;

@@ -6,9 +6,10 @@ using EVENT::MCParticle;
 using IMPL::MCParticleImpl;
 namespace TTbarAnalysis
 {
-	MCOperator:: MCOperator (LCCollection * col)
+	MCOperator:: MCOperator (LCCollection * col, LCCollection * rel)
 	{
 		myCollection = col;
+		myRelCollection = rel;
 		myPrimaryVertex[0] = 0.0;
 		myPrimaryVertex[1] = 0.0;
 		myPrimaryVertex[2] = 0.0;
@@ -168,6 +169,7 @@ namespace TTbarAnalysis
 		}
 		return false;
 	}
+
 	MCParticle * MCOperator::GetConsistentDaughter(MCParticle * parent, MCParticle * service, MESONS type)
 	{
 		vector< MCParticle * > daughters = SelectDaughtersOfType(service, type); //service->getDaughters();
@@ -221,6 +223,20 @@ namespace TTbarAnalysis
 		}
 		//std::cout << "Angle is wrong!\n";
 		return NULL;
+	
+	}
+	bool MCOperator::IsReconstructed(MCParticle * particle)
+	{
+		LCRelationNavigator navigator(myRelCollection);
+		int nvtx = navigator.getRelatedFromObjects(particle).size();
+		if (nvtx < 1) 
+		{
+			std::cout << "FATALERROR: Particle not reconstructed\n";
+		}
+		const vector< float > weights = navigator.getRelatedFromWeights(particle);
+		
+		return nvtx > 0 && weights[0] > 0.5;
+
 	}
 	MESONS MCOperator::GetParticleType(MCParticle * particle)
 	{
@@ -505,7 +521,7 @@ namespace TTbarAnalysis
 		std::cout<<"INFO: " << countParticle << " quarks and " << countAntiparticle << " antiquarks\n";
 		return countParticle && countAntiparticle;
 	}
-	vector< MCParticle * > MCOperator::SelectStableCloseDaughters(MCParticle * parent,int excludePDG)// bool discardCharmedMesons)
+	vector< MCParticle * > MCOperator::SelectStableCloseDaughters(MCParticle * parent,int excludePDG, bool selectReco, vector<MCParticle *> * misReconstructed)
 	{
 		vector< MCParticle * > result;
 		if (!parent || 
@@ -536,7 +552,18 @@ namespace TTbarAnalysis
 					//std::cout<<"CAUTION: Low momentum particle of " << MathOperator::getModule(daughter->getMomentum()) << " GeV!\n";
 				}
 				finished = true;
-				result.push_back(daughter);
+				if (selectReco && IsReconstructed(daughter)) 
+				{
+					result.push_back(daughter);
+				}
+				if (!selectReco) 
+				{
+					result.push_back(daughter);
+				}
+				if (misReconstructed && !IsReconstructed(daughter)) 
+				{
+					misReconstructed->push_back(daughter);
+				}
 			}
 			else 
 			{

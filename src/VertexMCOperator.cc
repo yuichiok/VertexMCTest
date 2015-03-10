@@ -6,10 +6,13 @@ using EVENT::MCParticle;
 using EVENT::ReconstructedParticle;
 using IMPL::VertexImpl;
 using IMPL::ReconstructedParticleImpl;
+using EVENT::LCCollection;
+using UTIL::LCRelationNavigator;
 namespace TTbarAnalysis 
 {
-	VertexMCOperator:: VertexMCOperator ()
+	VertexMCOperator:: VertexMCOperator(LCCollection * rel)
 	{
+		myRelCollection = rel;
 	}
 	vector< Vertex * > * VertexMCOperator::Construct(DecayChain * chain)
 	{
@@ -48,7 +51,7 @@ namespace TTbarAnalysis
 
 		return result;
 	}
-	void VertexMCOperator::AddProngs(Vertex * vertex, vector< MCParticle * > & particles)
+	void VertexMCOperator::AddProngs(Vertex * vertex, vector< MCParticle * > & particles, bool usingRelation)
 	{
 		if (!vertex || particles.size() == 0) 
 		{
@@ -58,8 +61,16 @@ namespace TTbarAnalysis
 		ReconstructedParticle * reco = vertex->getAssociatedParticle();
 		for (unsigned int i = 0; i < particles.size(); i++) 
 		{
-			ReconstructedParticle * prong = translate(particles[i]);
-			reco->addParticle(prong);
+			ReconstructedParticle * prong =(usingRelation)? getReco(particles[i]) : translate(particles[i]);
+			if (prong) 
+			{
+				reco->addParticle(prong);
+			}
+			else 
+			{
+				std::cout << "ERROR: Corrupted vertex!\n";
+
+			}
 		}
 		//std::cout << "Added " << reco->getParticles().size() << " particles!\n";
 
@@ -74,6 +85,30 @@ namespace TTbarAnalysis
 		ReconstructedParticle * reco = translate(particle);
 		VertexImpl * ivertex = static_cast<VertexImpl*>(vertex);
 		ivertex->setAssociatedParticle(reco);
+	}
+	ReconstructedParticle * VertexMCOperator::getReco(EVENT::MCParticle * particle)
+	{
+		LCRelationNavigator navigator(myRelCollection);
+		int nvtx = navigator.getRelatedFromObjects(particle).size();
+		std::cout << "Particles: " << nvtx <<'\n';
+		ReconstructedParticle * reco = NULL; // check!!!
+		int winner = -1;
+		float weight = 0.0;
+		const vector< float > weights = navigator.getRelatedFromWeights(particle);
+		if (nvtx > 0) 
+		{
+			for (int i = 0; i < nvtx; i++) 
+			{
+				if (weights[i] > weight) 
+				{
+					winner = i;
+					weight = weights[i];
+				}
+			}
+			reco = dynamic_cast<ReconstructedParticle*>(navigator.getRelatedFromObjects(particle)[winner]);
+		}
+
+		return reco;
 	}
 	ReconstructedParticle * VertexMCOperator::translate(EVENT::MCParticle * particle)
 	{
