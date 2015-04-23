@@ -13,7 +13,7 @@ namespace TTbarAnalysis
 		myPrimaryVertex[0] = 0.0;
 		myPrimaryVertex[1] = 0.0;
 		myPrimaryVertex[2] = 0.0;
-		myAngleCut = 0.784; // \pi/4
+		myAngleCut = 0.5; // \pi/4
 	}
 	DecayChain * MCOperator::RefineDecayChain(DecayChain * initial, vector<MESONS> typeOfProducts)
 	{
@@ -53,6 +53,11 @@ namespace TTbarAnalysis
 		for (int i = 0; i < number; i++) 
 		{
 			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) ) ;
+			if (i > 100 && result->GetSize() == 0) 
+			{
+				std::cout << "WARNING: EVENT RUN OUT OF TRIALS!\n";
+				break;
+			}
 			if (particle->getPDG() == pdg) 
 			{
 				if (CheckForUnification(particle, pdg)) 
@@ -180,17 +185,22 @@ namespace TTbarAnalysis
 		{
 			 //std::cout << "We have only 1 meson of type " << type << '\n';
 		}
-		float dE = 1.0;
+		float dE = 10.0;
 		for (int i = 0; i < size; i++) 
 		{
 			MCParticle * daughter = daughters[i];
 			//std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
-			if (daughter->getEnergy() > parent->getEnergy()+dE)// || 
+			if (MathOperator::getModule(daughter->getMomentum()) > MathOperator::getModule(parent->getMomentum())+dE)// || 
 			{
-				//std::cout << "Discarded by energy!\n";
+				std::cout << "Discarded by energy!\n";
 				//continue;
 			}
-			if (daughter->getCharge()*parent->getCharge() > 0.0 && type != BOTTOM_HADRONS && type != BOTTOM_BARYONS)
+			if (daughter->getCharge()*parent->getCharge() > 0.0 
+				&& (type == BOTTOM_MESONS || type ==  CHARMED_MESONS || type == STRANGE_MESONS))
+				//&& type != BOTTOM_HADRONS 
+				//&& type != BOTTOM_BARYONS 
+				//&& type != CHARMED_HADRONS 
+				//&& type != CHARMED_BARYONS)
 			{
 				//std::cout << "Same sign of charge!\n";
 				return daughter;
@@ -203,9 +213,9 @@ namespace TTbarAnalysis
 		for (int i = 0; i < size; i++) 
 		{
 			//std::cout << "Angle " << i << ": " << angle[i] << '\n';
-			if (angle[i] < minAngle && 
+			if (angle[i] < minAngle)// && 
 			   //daughters[i]->getEnergy() < parent->getEnergy()+dE &&
-			   (daughters[i]->getCharge()*parent->getCharge() > -0.0001 || type != BOTTOM_HADRONS || type != BOTTOM_BARYONS)) 
+			   //(daughters[i]->getCharge()*parent->getCharge() > -0.0001 && ( type == BOTTOM_MESONS || type == CHARMED_MESONS || type == STRANGE_MESONS ))) 
 			{
 				minAngle = angle[i];
 				winner = i;
@@ -216,7 +226,7 @@ namespace TTbarAnalysis
 			//std::cout << "Choosing angle " << winner <<  "\n";
 			if (daughters[winner]->getCharge()*parent->getCharge() < -0.0001  && type != BOTTOM_HADRONS && type != BOTTOM_BARYONS) 
 			{
-			//	std::cout << "FATAL: Charge is wrong!\n";
+				std::cout << "INFO: Charge is wrong!\n";
 				
 			}
 			return daughters[winner];
@@ -228,13 +238,30 @@ namespace TTbarAnalysis
 	bool MCOperator::IsReconstructed(MCParticle * particle)
 	{
 		LCRelationNavigator navigator(myRelCollection);
-		int nvtx = navigator.getRelatedFromObjects(particle).size();
+		vector< LCObject * > obj = navigator.getRelatedFromObjects(particle);
+		int nvtx = obj.size();
 		if (nvtx < 1) 
 		{
-			std::cout << "FATALERROR: Particle not reconstructed\n";
+			std::cout << "INFO: Particle not reconstructed\n";
+			return false;
 		}
 		const vector< float > weights = navigator.getRelatedFromWeights(particle);
-		
+		if (nvtx > 0) 
+		{
+			bool matched = false;
+			int winner = -1;
+			float maxweight = 0.0;
+			for (unsigned int j = 0; j < obj.size(); j++) 
+			{
+				ReconstructedParticle * reco = dynamic_cast< ReconstructedParticle * >(obj[j]);
+				if (weights[j] > maxweight && std::abs(reco->getCharge()) > 0.09)
+				{
+					maxweight = weights[j];
+					winner = j;
+				}
+			}
+			return winner > -1;
+		}
 		return nvtx > 0 && weights[0] > 0.5;
 
 	}
@@ -340,7 +367,7 @@ namespace TTbarAnalysis
 		}
 		if (result) 
 		{
-			if (count > 1 && type == CHARMED_MESONS) 
+			if (count > 1 && (type == CHARMED_MESONS || type == CHARMED_HADRONS)) 
 			{
 				std::cout<<"FATAL: Daughter multiplicity found for meson type " << type <<"!\n";
 				return NULL;
@@ -360,6 +387,15 @@ namespace TTbarAnalysis
 		}
 		return NULL;
 	}
+	EVENT::MCParticle * MCOperator::cureDoubleCharmDecay(std::vector< EVENT::MCParticle * > & selected)
+	{
+		MCParticleImpl * newparticle = new MCParticleImpl();
+		newparticle->setMomentum(selected[0]->getMomentum());
+		newparticle->setMass(selected[0]->getMass());
+		newparticle->setCharge(selected[0]->getCharge());
+		newparticle->setPDG(selected[0]->getPDG() + selected[1]->getPDG());
+		return newparticle;
+	}
 	vector< MCParticle * > MCOperator::SelectDaughtersOfType(MCParticle * parent, MESONS type)
 	{
 		vector< MCParticle * > daughters = parent->getDaughters();
@@ -373,75 +409,7 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
-	vector< MCParticle * > MCOperator::ScanForVertexParticles(const double * vertex, double precision)
-	{
-		int number = myCollection->getNumberOfElements();
-		vector< MCParticle * > result;
-		if (MathOperator::approximatelyEqual(myPrimaryVertex, vertex, precision)) 
-		{
-			 std::cout<<"ERROR: Vertex too close to primary!\n";
-			 return result;
-		}
-		for (int i = 0; i < number; i++)
-		{
-			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) ) ;
-			const double * another = particle->getVertex();
-			if (MathOperator::approximatelyEqual(another, vertex, precision)) 
-			{
-				//std::cout<<"Found particle " << particle->getPDG() << " from this vertex! Checking its visability...\n";
-				if (particle->isDecayedInCalorimeter() && abs(particle->getCharge())>0.00001) 
-				{
-					//std::cout<<"Particle reached calorimeter!\n";
-					result.push_back(particle);
-				}
-				else 
-				{
-					//std::cout<<"Not stable, checking daughters:\n";
-					vector< MCParticle * > daughters = SelectStableCloseDaughters(particle);
-					for (int j = 0; j < daughters.size(); j++) 
-					{
-						result.push_back(daughters[j]);
-					}
-				}
-			}
-		}
-		return result;
-	}
 	
-	vector< MCParticle * > MCOperator::ScanForVertexParticles(const float * vertex, double precision)
-	{
-		int number = myCollection->getNumberOfElements();
-		vector< MCParticle * > result;
-		if (MathOperator::approximatelyEqual(myPrimaryVertex, vertex, precision)) 
-		{
-			 std::cout<<"ERROR: Vertex too close to primary!\n";
-			 return result;
-		}
-		for (int i = 0; i < number; i++)
-		{
-			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) ) ;
-			const double * another = particle->getVertex();
-			if (MathOperator::approximatelyEqual(another, vertex, precision)) 
-			{
-				//std::cout<<"Found particle " << particle->getPDG() << " from this vertex! Checking its visability...\n";
-				if ((particle->isDecayedInCalorimeter() || particle->isDecayedInTracker()) && abs(particle->getCharge())>0.00001) 
-				{
-					//std::cout<<"Particle reached calorimeter!\n";
-					result.push_back(particle);
-				}
-				else 
-				{
-					//std::cout<<"Not stable, checking daughters:\n";
-					vector< MCParticle * > daughters = SelectStableCloseDaughters(particle);
-					for (int j = 0; j < daughters.size(); j++) 
-					{
-						result.push_back(daughters[j]);
-					}
-				}
-			}
-		}
-		return result;
-	}
 	vector< MCParticle * > MCOperator::GetPairParticles(int pdg)
 	{
 		pdg = abs(pdg);
@@ -586,7 +554,7 @@ namespace TTbarAnalysis
 		float accuracy = sqrt(a*a + b*b /( p * p * pow(sin(angles[1]), 4.0/3.0)) );
 		return gamma*accuracy;
 	}
-	bool MCOperator::CheckCompatibility(vector< MCParticle * > & daughters, MCParticle * parent, int plusCharge)
+	bool MCOperator::CheckCompatibility(const vector< MCParticle * > & daughters, MCParticle * parent, int plusCharge)
 	{
 		int charge = 0;
 		float mass = 0.0;
@@ -608,7 +576,7 @@ namespace TTbarAnalysis
 		}
 		return true;
 	}
-	vector< MCParticle * > MCOperator::CheckDaughterVisibility(vector< MCParticle * > & daughters)
+	vector< MCParticle * > MCOperator::CheckDaughterVisibility(const vector< MCParticle * > & daughters)
 	{
 		int size = daughters.size();
 		vector< MCParticle * > filtered;

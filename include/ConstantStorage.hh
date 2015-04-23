@@ -12,6 +12,8 @@ namespace TTbarAnalysis
 		STRANGE_MESONS,
 		BOTTOM_BARYONS,
 		BOTTOM_HADRONS,
+		CHARMED_BARYONS,
+		CHARMED_HADRONS,
 		TRACKABLE_PARTICLES,
 		NONTRACKABLE_PARTICLES,
 		_max_MESONS = NONTRACKABLE_PARTICLES 
@@ -36,6 +38,8 @@ namespace TTbarAnalysis
 		static const std::vector<int> & BOTTOM_MESONS_PGD();
 		static const std::vector<int> & BOTTOM_BARYONS_PGD();
 		static const std::vector<int> & BOTTOM_HADRONS_PGD();
+		static const std::vector<int> & CHARMED_BARYONS_PGD();
+		static const std::vector<int> & CHARMED_HADRONS_PGD();
 		static const std::vector<int> & TRACKABLE_PARTICLES_PGD();
 		static const std::vector<int> & NONTRACKABLE_PARTICLES_PGD();
 		
@@ -46,7 +50,7 @@ namespace TTbarAnalysis
 			public:
 			_init()
 			{
-				///////////////CHARMED/////////////////////
+				///////////////CHARMEDMESONS/////////////////////
 				myCharmedMesonsPDGs.push_back(421);
 				myCharmedMesonsPDGs.push_back(411);
 				//*
@@ -67,7 +71,7 @@ namespace TTbarAnalysis
 				myCharmedMesonsPDGs.push_back(20433);
 				myCharmedMesonsPDGs.push_back(435);
 				//*/
-				///////////////BOTTOM//////////////////////
+				///////////////BOTTOMMESONS//////////////////////
 				myBottomMesonsPDGs.push_back(511);
 				myBottomMesonsPDGs.push_back(521);
 				///*
@@ -94,7 +98,7 @@ namespace TTbarAnalysis
 				myBottomMesonsPDGs.push_back(10543);
 				myBottomMesonsPDGs.push_back(20543);
 				///*/
-				///////////////STRANGE//////////////////
+				///////////////STRANGEMESONS//////////////////
 				myStrangeMesonsPDGs.push_back(130);
 				myStrangeMesonsPDGs.push_back(310);
 				myStrangeMesonsPDGs.push_back(311);
@@ -139,6 +143,33 @@ namespace TTbarAnalysis
 				myStrangeMesonsPDGs.push_back(329);
 				myStrangeMesonsPDGs.push_back(9000319);
 				myStrangeMesonsPDGs.push_back(9000329);
+				///////////////CHARMEDBARYONS//////////////////////
+				myCharmedBaryonsPDGs.push_back(4122);
+				myCharmedBaryonsPDGs.push_back(4222);
+				myCharmedBaryonsPDGs.push_back(4212);
+				myCharmedBaryonsPDGs.push_back(4112);
+				myCharmedBaryonsPDGs.push_back(4224);
+				myCharmedBaryonsPDGs.push_back(4214);
+				myCharmedBaryonsPDGs.push_back(4114);
+				myCharmedBaryonsPDGs.push_back(4232);
+				myCharmedBaryonsPDGs.push_back(4132);
+				myCharmedBaryonsPDGs.push_back(4322);
+				myCharmedBaryonsPDGs.push_back(4312);
+				myCharmedBaryonsPDGs.push_back(4324);
+				myCharmedBaryonsPDGs.push_back(4314);
+				myCharmedBaryonsPDGs.push_back(4332);
+				myCharmedBaryonsPDGs.push_back(4334);
+				myCharmedBaryonsPDGs.push_back(4412);
+				myCharmedBaryonsPDGs.push_back(4422);
+				myCharmedBaryonsPDGs.push_back(4414);
+				myCharmedBaryonsPDGs.push_back(4424);
+				myCharmedBaryonsPDGs.push_back(4432);
+				myCharmedBaryonsPDGs.push_back(4434);
+				myCharmedBaryonsPDGs.push_back(4444);
+				///////////////CHARMEDHADRONS//////////////////////
+				myCharmedHadronsPDGs.reserve( myCharmedBaryonsPDGs.size() + myCharmedMesonsPDGs.size() );
+				myCharmedHadronsPDGs.insert(myCharmedHadronsPDGs.end(), myCharmedMesonsPDGs.begin(), myCharmedMesonsPDGs.end());
+				myCharmedHadronsPDGs.insert(myCharmedHadronsPDGs.end(), myCharmedBaryonsPDGs.begin(), myCharmedBaryonsPDGs.end());
 				///////////////BOTTOMBARYONS//////////////////////
 				myBottomBaryonsPDGs.push_back(5122);
 				myBottomBaryonsPDGs.push_back(5112);
@@ -202,6 +233,8 @@ namespace TTbarAnalysis
 			static std::vector<int> myStrangeMesonsPDGs; 
 			static std::vector<int> myBottomBaryonsPDGs; 
 			static std::vector<int> myBottomHadronsPDGs; 
+			static std::vector<int> myCharmedBaryonsPDGs; 
+			static std::vector<int> myCharmedHadronsPDGs; 
 			static std::vector<int> myTrackableParticlesPDGs; 
 			static std::vector<int> myNonTrackableParticlesPDGs; 
 		//

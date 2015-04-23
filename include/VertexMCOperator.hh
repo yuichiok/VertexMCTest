@@ -5,6 +5,7 @@
 #include <UTIL/LCRelationNavigator.h>
 #include <IMPL/VertexImpl.h>
 #include "DecayChain.hh"
+#include "MyVertex.hh"
 #include "ConstantStorage.hh"
 #include "MathOperator.hh"
 #ifndef _VertexMCOperator_hh

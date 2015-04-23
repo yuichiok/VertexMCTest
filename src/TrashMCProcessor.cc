@@ -30,11 +30,17 @@ namespace TTbarAnalysis
            	 std::string("BStar")
 	    );
 	    registerOutputCollection( LCIO::MCPARTICLE,
+        	    "OutputProngsName" , 
+	            "Name of the Prongs collection"  ,
+        	    _outputProngsName ,
+           	 std::string("EGProngs")
+	    );
+	    /*registerOutputCollection( LCIO::MCPARTICLE,
         	    "OutputBStarName" , 
 	            "Name of the Vertex collection"  ,
         	    _outputBStarName ,
            	 std::string("BStar")
-	    );
+	    );*/
 	    registerOutputCollection(LCIO::MCPARTICLE,
 	    		"QuarkCollectionName" , 
 	            "Name of the b-quark collection"  ,
@@ -71,12 +77,15 @@ namespace TTbarAnalysis
         	    _writeBonlyParameter,
            	 _writeBonlyParameter
 	    );
-		_pdgs.push_back(BOTTOM_HADRONS);
+		//_pdgs.push_back(BOTTOM_HADRONS);
+		_pdgs.push_back(BOTTOM_MESONS);
 		_pdgs.push_back(CHARMED_MESONS);
+		//_pdgs.push_back(CHARMED_HADRONS);
 		_pdgs.push_back(EXCEPTIONAL_MESONS);
                 ip[0] = 0.0;
                 ip[1] = 0.0;
                 ip[2] = 0.0;
+		ClearVariables();
 	}	
 
 
@@ -133,6 +142,7 @@ namespace TTbarAnalysis
 		_hVertexTree->Branch("energyOfParticles", _energyOfParticles, "energyOfParticles[numberOfVertexes][15]/F");
 		_hVertexTree->Branch("momentumOfParticles", _momentumOfParticles, "momentumOfParticles[numberOfVertexes][15]/F");
 		_hVertexTree->Branch("massOfParticles", _massOfParticles, "massOfParticles[numberOfVertexes][15]/F");
+		_hVertexTree->Branch("interactionOfParticles", _interactionOfParticles, "interactionOfParticles[numberOfVertexes][15]/I");
 		//******************************************************************************************************//
 		_hTrackTree = new TTree( "Tracks", "My test tree!" );
 		_hTrackTree->Branch("bnumber", &_bnumber, "bnumber/I");
@@ -184,23 +194,28 @@ namespace TTbarAnalysis
 		std::cout<<"|"<<particle->getPDG() <<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy()<<"\t\t|"<<particle->getVertex()[0]<<"\t\t|"<<particle->getVertex()[1]<<"\t\t|"<<particle->getVertex()[2] <<"\t\t|\n";
 	
 	}
-	void TrashMCProcessor::Write(MCOperator & opera, DecayChain * chain, int & number)
+	void TrashMCProcessor::Write(vector< Vertex * > * vertices, int & number)
 	{
-		if (!chain || chain->GetSize() < 2) 
+		if (!vertices || vertices->size() < 2) 
 		{
 			return;
 		}
-		for (int i = 1; i < chain->GetSize(); i++) 
+		for (unsigned int i = 0; i < vertices->size(); i++) 
 		{
-			_numberOfVertexes = number++;
-			_PDG[_numberOfVertexes] = chain->GetParentPDG();
-			_generation[_numberOfVertexes] = i+1;
-			_charge[_numberOfVertexes] = chain->Get(i-1)->getCharge();
-			MCParticle * parent = chain->Get(i);
-			if (!parent) 
+			Vertex * vertex = vertices->at(i);
+			_PDG[_numberOfVertexes] = vertex->getParameters()[1];
+			_generation[_numberOfVertexes] = vertex->getParameters()[2];
+			ReconstructedParticle * particle = vertex->getAssociatedParticle();
+			_charge[_numberOfVertexes] = particle->getCharge();
+			_numberOfParticles[_numberOfVertexes] = particle->getParticles().size();
+			MyVertex * myvertex = static_cast< MyVertex * >(vertex);
+			for (unsigned int j = 0; j < particle->getParticles().size(); j++) 
 			{
-				break;
+				_momentumOfParticles[_numberOfVertexes][j] = MathOperator::getModule(particle->getParticles()[j]->getMomentum());
+				_massOfParticles[_numberOfVertexes][j] = particle->getParticles()[j]->getMass();
+				_interactionOfParticles[_numberOfVertexes][j] = myvertex->__GetMCParticles()[j]->isDecayedInCalorimeter();
 			}
+			_numberOfVertexes++;
 		}
 	}
 	void TrashMCProcessor::PrintChain(vector< MCParticle * > * chain)
@@ -209,14 +224,13 @@ namespace TTbarAnalysis
 		{
 			return;
 		}
-		for (int i = 0; i < chain->size(); i++) 
+		for (unsigned int i = 0; i < chain->size(); i++) 
 		{
 			PrintParticle(chain->at(i));
 		}
 	}
 	void TrashMCProcessor::WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks)
 	{
-		std::cout<< "HERE!!!!\n";
 		IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE ) ;
 		if (quarks.size() == 2) 
 		{
@@ -228,7 +242,7 @@ namespace TTbarAnalysis
 		evt->addCollection( mc , _outputquarkcolName ) ;
 	}
 
-	void TrashMCProcessor::AddProngs( VertexMCOperator & vertexOperator, MCOperator & opera, DecayChain * chain, vector< Vertex * > * verticies)
+	void TrashMCProcessor::AddProngs( VertexMCOperator & vertexOperator, MCOperator & opera, DecayChain * chain, vector< Vertex * > * verticies, std::vector<int> & parameters, IMPL::LCCollectionVec * col)
 	{
 		if (!verticies || !chain) 
 		{
@@ -242,39 +256,31 @@ namespace TTbarAnalysis
 			vertexOperator.AddProngs(verticies->at(0), bdaughters, useRelation);
 			vector< MCParticle * > cdaughters = opera.SelectStableCloseDaughters(chain->Get(1));
 			vertexOperator.AddProngs(verticies->at(1), cdaughters, useRelation);
+			if (col) 
+			{
+				for (unsigned int i = 0; i < bdaughters.size(); i++) 
+				{
+					parameters.push_back( (float) chain->GetParentPDG() / 5.0 * 2);
+					col->addElement(bdaughters[i]);
+				}
+				for (unsigned int i = 0; i < cdaughters.size(); i++) 
+				{
+					parameters.push_back( (float) chain->GetParentPDG() / 5.0 * 3);
+					col->addElement(cdaughters[i]);
+				}
+			}
 		}
 		else 
 		{
 			vector< MCParticle * > bdaughters = opera.SelectStableCloseDaughters(chain->Get(0));
 			vertexOperator.AddProngs(verticies->at(0), bdaughters, useRelation);
-		}
-	}
-
-	void TrashMCProcessor::ExtractStarParticles(LCEvent * evt, MCOperator opera,  DecayChain * bChainRaw, DecayChain * bChain, int v)
-	{
-		if (!bChain) 
-		{
-			return;
-		}
-		vector< MCParticle * > daughters = opera.SelectStableCloseDaughters(bChainRaw->Get(0), bChain->Get(0)->getPDG());
-		if (daughters.size() < 1) 
-		{
-			//return;
-		}
-		IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE ) ;
-		for (unsigned int i = 0; i < daughters.size(); i++) 
-		{
-			mc->addElement(new MCParticleImpl((const IMPL::MCParticleImpl&)(*daughters[i])));
-			PrintParticle(daughters[i]);
-		}
-		switch(v)
-		{
-		        case 1:
-			evt->addCollection( mc , _outputBStarName ) ;
-			break;		
-		        case -1:
-			evt->addCollection( mc , _outputBbarStarName ) ;
-			break;		
+			if (col) 
+			{
+				for (unsigned int i = 0; i < bdaughters.size(); i++) 
+				{
+					col->addElement(bdaughters[i]);
+				}
+			}
 		}
 	}
 
@@ -288,23 +294,24 @@ namespace TTbarAnalysis
 			MCOperator opera(col,rel);
 			VertexMCOperator vertexOperator(rel);
 	 		_tag = opera.CheckProcessForPair(_tagParameter);
-			vector< MCParticle * > bquarks = opera.GetPairParticles(_pdgs[0]);
+			vector< MCParticle * > bquarks = opera.GetPairParticles(BOTTOM_HADRONS);//_pdgs[0]);
 			_nEvt ++ ;
 			
 			std::cout<<"\t|PDG\t\t|Mass\t\t|Charge\t\t|Energy\t\t|Vtx X\t\t|Vtx Y\t\t|Vtx Z\t\t|\n";
 			DecayChain * bChainRaw = opera.Construct(string("b-quark decay chain"), 5, _pdgs);
 			DecayChain * bChain = opera.RefineDecayChain(bChainRaw, _pdgs);
 			IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE ) ;
+			mc->setSubset();
 			if (bChain) 
 			{
 				vector< MCParticle * > daughters = opera.SelectStableCloseDaughters(bChainRaw->Get(0), bChain->Get(0)->getPDG());	
 				std::cout<<"Additional B particles: \n";
-				for (int i = 0; i < daughters.size(); i++) 
+				for (unsigned int i = 0; i < daughters.size(); i++) 
 				{
 					vector< float > direction = MathOperator::getDirection(daughters[i]->getMomentum());
 					_bstaroffset[_bstarnumber] = MathOperator::getDistanceTo(ip, direction, bChain->Get(1)->getVertex());
 					_bstarmomentum[_bstarnumber++] = MathOperator::getModule(daughters[i]->getMomentum());
-					mc->addElement(new MCParticleImpl((const IMPL::MCParticleImpl&)(*daughters[i])));
+					mc->addElement(daughters[i]);
 					PrintParticle(daughters[i]);
 				}
 			}
@@ -314,12 +321,12 @@ namespace TTbarAnalysis
 			{
 				vector< MCParticle * > daughters = opera.SelectStableCloseDaughters(bbarChainRaw->Get(0), bbarChain->Get(0)->getPDG());	
 				std::cout<<"Additional Bbar particles: \n";
-				for (int i = 0; i < daughters.size(); i++) 
+				for (unsigned int i = 0; i < daughters.size(); i++) 
 				{
 					vector< float > direction = MathOperator::getDirection(daughters[i]->getMomentum());
 					_bstaroffset[_bstarnumber] = MathOperator::getDistanceTo(ip, direction, bbarChain->Get(1)->getVertex());
 					_bstarmomentum[_bstarnumber++] = MathOperator::getModule(daughters[i]->getMomentum());
-					mc->addElement(new MCParticleImpl((const IMPL::MCParticleImpl&)(*daughters[i])));
+					mc->addElement(daughters[i]);
 					PrintParticle(daughters[i]);
 				}
 			}
@@ -327,10 +334,13 @@ namespace TTbarAnalysis
 
 			vector< Vertex * > * bverticies = vertexOperator.Construct(bChain);
 			vector< Vertex * > * bbarverticies = vertexOperator.Construct(bbarChain);
+			IMPL::LCCollectionVec * prongs = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE ) ;
+			vector <int> parameters;
+			prongs->setSubset ();
+			//prongs->setFlag	(16);
+			AddProngs(vertexOperator, opera, bChain, bverticies,parameters, prongs);
+			AddProngs(vertexOperator, opera, bbarChain, bbarverticies,parameters, prongs);
 			
-			AddProngs(vertexOperator, opera, bChain, bverticies);
-			AddProngs(vertexOperator, opera, bbarChain, bbarverticies);
-
 			Write(opera, bChain,bverticies);
 			Write(opera, bbarChain,bbarverticies);
 			
@@ -340,10 +350,10 @@ namespace TTbarAnalysis
 			WriteQuarksCollection(evt, bquarks);
 			WriteVertexCollection(evt, bverticies, bbarverticies);
 			
-			int number = 0;
-			Write(opera,bbarChain,number);
-			Write(opera,bChain,number);
-			_numberOfVertexes = number;
+			//int number = 0;
+			_numberOfVertexes = 0;
+			Write(bverticies,_numberOfVertexes);
+			Write(bbarverticies, _numberOfVertexes);
 
 			//std::cout<< "There was " << _numberOfB0 << " B-mesons.\n";
 			_numberOfB0 = 2;
@@ -354,8 +364,10 @@ namespace TTbarAnalysis
 			_cnumber = (_cnumber < 0)? 0: _cnumber;
 			_cbarnumber = (_cbarnumber < 0)? 0: _cbarnumber;
 			_hTrackTree->Fill();
-			_hMisRecoTree->Fill();
+			//_hMisRecoTree->Fill();
 			_hVertexTree->Fill();
+			prongs->parameters().setValues("trackIDs", parameters);
+			evt->addCollection( prongs , _outputProngsName);
 			ClearVariables();
 	
 		}
@@ -370,23 +382,23 @@ namespace TTbarAnalysis
 		{
 			return;
 		}
-		for (int i = 0; i < chain->GetSize(); i++) 
+		for (unsigned int i = 0; i < chain->GetSize(); i++) 
 		{
 			PrintParticle(chain->Get(i));
 		}
-		vector< MCParticle * > * misreco = new vector< MCParticle * >();
+		//vector< MCParticle * > * misreco = new vector< MCParticle * >();
 		if (chain->GetParentPDG() > 0 && chain->GetSize() > 1) 
 		{
-			vector< MCParticle * > daughters = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG()); //opera.ScanForVertexParticles(bverticies->at(0)->getPosition(), 1e-3);
+			const vector< MCParticle * > daughters = static_cast< MyVertex * >(verticies->at(0))->__GetMCParticles(); // opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG()); //opera.ScanForVertexParticles(bverticies->at(0)->getPosition(), 1e-3);
 			_bcharge = (int)chain->Get(0)->getCharge();
 			_bnumber = daughters.size();
-			_bnumber_f = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true, misreco).size();//opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true).size();//opera.CheckDaughterVisibility(daughters).size();
+			_bnumber_f = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true).size();//opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true).size();//opera.CheckDaughterVisibility(daughters).size();
 			_bIPdistance = verticies->at(0)->getParameters()[0];
 			Write(daughters, 1);
 			std::cout<<"Vertex b-quark: " << verticies->at(0)->getParameters()[0]<< " n-tracks: " << _bnumber << '\n';
-			vector< MCParticle * > cdaughters =opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bverticies->at(1)->getPosition(), 1e-3);
+			const vector< MCParticle * > cdaughters =static_cast< MyVertex * >(verticies->at(1))->__GetMCParticles(); //opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bverticies->at(1)->getPosition(), 1e-3);
 			_cnumber = cdaughters.size();
-			_cnumber_f = opera.SelectStableCloseDaughters(chain->Get(1),0,true, misreco).size();//opera.CheckDaughterVisibility(cdaughters).size();
+			_cnumber_f = opera.SelectStableCloseDaughters(chain->Get(1),0,true).size();//opera.CheckDaughterVisibility(cdaughters).size();
 			opera.CheckDaughterVisibility(daughters);
 			Write(cdaughters, 2);
 			std::cout<<"Vertex c-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " << _cnumber <<  '\n';
@@ -408,19 +420,19 @@ namespace TTbarAnalysis
 		}
 		if (chain->GetParentPDG() < 0 && chain->GetSize() > 1) 
 		{
-			vector< MCParticle * > daughters =opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG()); // opera.ScanForVertexParticles(bbarverticies->at(0)->getPosition(), 1e-3);
+			const vector< MCParticle * > daughters = static_cast< MyVertex * >(verticies->at(0))->__GetMCParticles();// opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG()); // opera.ScanForVertexParticles(bbarverticies->at(0)->getPosition(), 1e-3);
 			Write(daughters, -1);
 			_bbarcharge = (int) chain->Get(0)->getCharge();
 			_bbarnumber = daughters.size();
 			_bbarIPdistance = verticies->at(0)->getParameters()[0];
-			_bbarnumber_f = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true,misreco).size();//opera.CheckDaughterVisibility(daughters).size();
+			_bbarnumber_f = opera.SelectStableCloseDaughters(chain->Get(0), chain->Get(1)->getPDG(),true).size();//opera.CheckDaughterVisibility(daughters).size();
 		        std::cout<<"Vertex bbar-quark"<< 0 <<": " << verticies->at(0)->getParameters()[0] <<" n-tracks: " << _bbarnumber <<  '\n';
-			vector< MCParticle * > cdaughters= opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bbarverticies->at(1)->getPosition(), 1e-3);
+			const vector< MCParticle * > cdaughters= static_cast< MyVertex * >(verticies->at(1))->__GetMCParticles(); //opera.SelectStableCloseDaughters(chain->Get(1)); //opera.ScanForVertexParticles(bbarverticies->at(1)->getPosition(), 1e-3);
 			_cbarnumber = cdaughters.size();
 			opera.CheckDaughterVisibility(daughters);
 			std::cout<<"Vertex cbar-quark: " << verticies->at(1)->getParameters()[0] <<" n-tracks: " <<_cbarnumber << '\n';
 			opera.CheckDaughterVisibility(cdaughters);
-			_cbarnumber_f = opera.SelectStableCloseDaughters(chain->Get(1),0,true, misreco).size();//opera.CheckDaughterVisibility(cdaughters).size();
+			_cbarnumber_f = opera.SelectStableCloseDaughters(chain->Get(1),0,true).size();//opera.CheckDaughterVisibility(cdaughters).size();
 			_bbardistance = MathOperator::getDistance(verticies->at(1)->getPosition(), verticies->at(0)->getPosition());
 			_bbartotalnumber = _cbarnumber + _bbarnumber;
 			_cbarcharge = (int) chain->Get(1)->getCharge();
@@ -433,7 +445,7 @@ namespace TTbarAnalysis
 			_cbaraccuracy = opera.GetAccuracy(chain->Get(1), _aParameter, _bParameter); 
 
 		}
-		WriteMisReco(misreco);
+		//WriteMisReco(misreco);
 	}
 	void TrashMCProcessor::WriteMisReco(vector< MCParticle * > * particles)
 	{
@@ -449,7 +461,7 @@ namespace TTbarAnalysis
 		}
 		_misreconumber += particles->size();
 	}
-	double TrashMCProcessor::getMissingPt(vector< MCParticle * > & bdaugthers, vector< MCParticle * > & cdaughters, Vertex * vertex)
+	double TrashMCProcessor::getMissingPt(const vector< MCParticle * > & bdaugthers, const vector< MCParticle * > & cdaughters, Vertex * vertex)
 	{
 		const float * position = vertex->getPosition();
 		for (int i = 0; i < 3; i++) 
@@ -458,18 +470,18 @@ namespace TTbarAnalysis
 		}
 		std::cout << '\n';
 		vector< const double * > vectors;
-		for (int i = 0; i < bdaugthers.size(); i++) 
+		for (unsigned int i = 0; i < bdaugthers.size(); i++) 
 		{
 			vectors.push_back(bdaugthers[i]->getMomentum());
 		}
-		for (int i = 0; i < cdaughters.size(); i++) 
+		for (unsigned int i = 0; i < cdaughters.size(); i++) 
 		{
 			vectors.push_back(cdaughters[i]->getMomentum());
 		}
 		double missing =  MathOperator::getMissingPt(vectors, position);
 		return missing;
 	}
-	void TrashMCProcessor::Write(vector< MCParticle * > daughters, int v)
+	void TrashMCProcessor::Write(const vector< MCParticle * > daughters, int v)
 	{
 		float * offset = NULL;
 		float * pt = NULL;
@@ -515,7 +527,7 @@ namespace TTbarAnalysis
 		IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( EVENT::LCIO::VERTEX ) ;
 		if (bvertexes) 
 		{
-			for (int i = 0; i < bvertexes->size(); i++) 
+			for (unsigned int i = 0; i < bvertexes->size(); i++) 
 			{
 				
 				mc->addElement(bvertexes->at(i));
@@ -523,7 +535,7 @@ namespace TTbarAnalysis
 		}
 		if (bbarvertexes) 
 		{
-			for (int i = 0; i < bbarvertexes->size(); i++)
+			for (unsigned int i = 0; i < bbarvertexes->size(); i++)
 			{
 			        mc->addElement(bbarvertexes->at(i));
 			}
@@ -585,7 +597,7 @@ namespace TTbarAnalysis
 			_cbarptrack[i] = -1.0;
 			_cbaretatrack[i] = -1.0;
 			_cbaroffsettrack[i]  = -1.0;
-
+			_numberOfParticles[i] = -1;
 			_charge[i] = 0;
 			_PDG[i] = 0;
 			_generation[i] = 0;
@@ -594,6 +606,7 @@ namespace TTbarAnalysis
 				_energyOfParticles[i][j] = -1.0;
 				_momentumOfParticles[i][j] = -1.0;
 				_massOfParticles[i][j] = -1.0;
+				_interactionOfParticles[i][j] = -1;
 			}
 		}
 	}

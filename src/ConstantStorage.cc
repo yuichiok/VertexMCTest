@@ -7,6 +7,8 @@ namespace TTbarAnalysis
 	vector<int> ConstantStorage::myStrangeMesonsPDGs;
 	vector<int> ConstantStorage::myBottomBaryonsPDGs;
 	vector<int> ConstantStorage::myBottomHadronsPDGs;
+	vector<int> ConstantStorage::myCharmedBaryonsPDGs;
+	vector<int> ConstantStorage::myCharmedHadronsPDGs;
 	vector<int> ConstantStorage::myTrackableParticlesPDGs;
 	vector<int> ConstantStorage::myNonTrackableParticlesPDGs;
 
@@ -32,6 +34,14 @@ namespace TTbarAnalysis
 	{
 		return myBottomHadronsPDGs;
 	}
+	const std::vector<int> & ConstantStorage::CHARMED_BARYONS_PGD()
+	{
+		return myCharmedBaryonsPDGs;
+	}
+	const std::vector<int> & ConstantStorage::CHARMED_HADRONS_PGD()
+	{
+		return myCharmedHadronsPDGs;
+	}
 	const std::vector<int> & ConstantStorage::TRACKABLE_PARTICLES_PGD()
 	{
 		return myTrackableParticlesPDGs;
@@ -54,6 +64,10 @@ namespace TTbarAnalysis
 			return BOTTOM_BARYONS_PGD();
 			case BOTTOM_HADRONS:
 			return BOTTOM_HADRONS_PGD();
+			case CHARMED_HADRONS:
+			return CHARMED_HADRONS_PGD();
+			case CHARMED_BARYONS:
+			return CHARMED_BARYONS_PGD();
 			case TRACKABLE_PARTICLES:
 			return TRACKABLE_PARTICLES_PGD();
 			case NONTRACKABLE_PARTICLES:

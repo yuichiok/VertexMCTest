@@ -36,7 +36,8 @@ namespace TTbarAnalysis
 
 	Vertex * VertexMCOperator::construct(EVENT::MCParticle * particle, const double * ip, int pdg, int number)
 	{
-		VertexImpl * result = new VertexImpl();
+		//VertexImpl * result = new VertexImpl();
+		MyVertex * result = new MyVertex();
 		
 		const double * initial;
 			initial = particle->getVertex();
@@ -72,7 +73,9 @@ namespace TTbarAnalysis
 
 			}
 		}
-		//std::cout << "Added " << reco->getParticles().size() << " particles!\n";
+		MyVertex * myvertex = static_cast< MyVertex * >(vertex);
+		myvertex->__SetMCParticles(particles);
+		std::cout << "Added " << myvertex->__GetMCParticles().size() << " particles!\n";
 
 	}
 	void VertexMCOperator::addParticle(Vertex * vertex, MCParticle * particle)

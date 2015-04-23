@@ -22,6 +22,7 @@
 #include "MathOperator.hh"
 #include "MCOperator.hh"
 #include "VertexMCOperator.hh"
+#include "MyVertex.hh"
 using namespace lcio ;
 using namespace marlin ;
 
@@ -63,13 +64,12 @@ namespace TTbarAnalysis
 	  void PrintChain(std::vector< MCParticle * > * chain);
 
 	  void WriteVertexCollection(LCEvent * evt, std::vector< Vertex * > * bvertexes, std::vector< Vertex * > * bbarvertexes);
-	  void Write(MCOperator & opera, DecayChain * chain, int & number);
+	  void Write(std::vector< EVENT::Vertex * > * vertices, int & number);
 	  void Write(MCOperator & opera,DecayChain * chain, std::vector< Vertex * > * bvertexes);
-	  void AddProngs( VertexMCOperator & vertexOperator, MCOperator & opera, DecayChain * chain, std::vector< Vertex * > * vertices);
-	  void Write(std::vector< MCParticle * > particle , int v);
-	  double getMissingPt(std::vector< MCParticle * > & bdaugthers, std::vector< MCParticle * > & cdaughters, Vertex * vertex);
+	  void AddProngs( VertexMCOperator & vertexOperator, MCOperator & opera, DecayChain * chain, std::vector< Vertex * > * vertices, std::vector<int> & parameters, IMPL::LCCollectionVec * col = NULL);
+	  void Write(const std::vector< MCParticle * > particle , int v);
+	  double getMissingPt(const std::vector< MCParticle * > & bdaugthers, const  std::vector< MCParticle * > & cdaughters, Vertex * vertex);
 	  void WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks);
-	  void ExtractStarParticles(LCEvent * evt, MCOperator opera,  DecayChain * bChainRaw, DecayChain * bChain, int v);
 	  void WriteMisReco(std::vector< MCParticle * > * particles);
 	  void ClearVariables(); 
 	 protected:
@@ -80,6 +80,7 @@ namespace TTbarAnalysis
 	  std::string _outputcolName;
 	  std::string _outputquarkcolName;
 	  std::string _outputBStarName; 
+	  std::string _outputProngsName; 
 	  std::string _colRelName;
 	  std::string _outputBbarStarName; 
 	  std::vector<MESONS> _pdgs;
@@ -145,6 +146,7 @@ namespace TTbarAnalysis
 	  float _energyOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];
 	  float _massOfParticles[MAXV][MAXV];
+	  int _interactionOfParticles[MAXV][MAXV];
 	
 	  float _bptrack[MAXV];
 	  float _betatrack[MAXV];
