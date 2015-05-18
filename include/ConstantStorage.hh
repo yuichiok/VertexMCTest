@@ -4,19 +4,19 @@
 #define _TTbarAnalysis_h 1
 namespace TTbarAnalysis 
 {
-	enum MESONS
+	enum PDGTYPE
 	{
-		EXCEPTIONAL_MESONS,
-		BOTTOM_MESONS,
-		CHARMED_MESONS,
-		STRANGE_MESONS,
-		BOTTOM_BARYONS,
-		BOTTOM_HADRONS,
-		CHARMED_BARYONS,
-		CHARMED_HADRONS,
-		TRACKABLE_PARTICLES,
-		NONTRACKABLE_PARTICLES,
-		_max_MESONS = NONTRACKABLE_PARTICLES 
+		EXCEPTIONAL_PDGTYPE = 0,
+		BOTTOM_MESONS = 500,
+		CHARMED_MESONS = 400,
+		STRANGE_MESONS = 300,
+		BOTTOM_BARYONS = 5000,
+		BOTTOM_HADRONS = 5500,
+		CHARMED_BARYONS = 4000,
+		CHARMED_HADRONS = 4400,
+		TRACKABLE_PARTICLES = 1,
+		NONTRACKABLE_PARTICLES = 1000000,     //Should be a large number
+		_max_MESONS = NONTRACKABLE_PARTICLES  //Because of this line
 	};
 	class ConstantStorage 
 	{
@@ -43,7 +43,7 @@ namespace TTbarAnalysis
 		static const std::vector<int> & TRACKABLE_PARTICLES_PGD();
 		static const std::vector<int> & NONTRACKABLE_PARTICLES_PGD();
 		
-		static const std::vector<int> & GET_PDG(MESONS type);
+		static const std::vector<int> & GET_PDG(PDGTYPE type);
 		//static constructor pattern
 		static class _init
 		{

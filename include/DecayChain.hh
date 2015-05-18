@@ -31,7 +31,7 @@ namespace TTbarAnalysis
 			std::string GetName() const;
 			const std::vector< EVENT::MCParticle * > & GetAll() const;
 			void Merge(DecayChain & other);
-			EVENT::MCParticle * Find(MESONS type) const;
+			EVENT::MCParticle * Find(PDGTYPE type) const;
 			//oid Print();
 		private:
 		//

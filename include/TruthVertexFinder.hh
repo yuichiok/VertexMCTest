@@ -1,5 +1,5 @@
-#ifndef TrashMCProcessor_h
-#define TrashMCProcessor_h 1
+#ifndef TruthVertexFinder_h
+#define TruthVertexFinder_h 1
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
@@ -29,35 +29,35 @@ using namespace marlin ;
 
 namespace TTbarAnalysis 
 {
-	
-	class TrashMCProcessor : public Processor 
+	////////////////////////////////////////////////////////
+	/// This processor is designed to extruct a secondary///
+	/// vertices from collection of generated particles, ///
+	/// by using a PDG type and daughter/parent relation ///
+	/// relations. 					     ///
+	/// TruthVertexFinder has two main outputs:	     ///
+	/// EGProngs - MCParticle type with parameters	     ///
+	/// MCVertex - Vertex type with particles	     ///
+	/// For more info and usage please see doc/ folder   ///
+	////////////////////////////////////////////////////////
+	/// Author: BILOKIN Sviatoslav, PhD student	     ///
+	///	    POESCHL Roman, Supervisor		     ///
+	///	    RICHARD Francois, Supervisor	     ///
+	/// 				designed: 2015-2017  ///
+	////////////////////////////////////////////////////////
+	class TruthVertexFinder : public Processor 
 	{
 	  
 	 public:
 	  
-	  virtual Processor*  newProcessor() { return new TrashMCProcessor ; }
+	  virtual Processor*  newProcessor() { return new TruthVertexFinder ; }
 	  
 	  
-	  TrashMCProcessor() ;
+	  TruthVertexFinder() ;
 	  
-	  /** Called at the begin of the job before anything is read.
-	   * Use to initialize the processor, e.g. book histograms.
-	   */
 	  virtual void init() ;
-	  
-	  /** Called for every run.
-	   */
 	  virtual void processRunHeader( LCRunHeader* run ) ;
-	  
-	  /** Called for every event - the working horse.
-	   */
 	  virtual void processEvent( LCEvent * evt ) ; 
-	  
-	  
 	  virtual void check( LCEvent * evt ) ; 
-	  
-	  /** Called after data processing for clean up.
-	   */
 	  virtual void end() ;
 	 /////////////////CUSTOM/////////////////////////// 
 	  void PrintParticle(MCParticle * particle);
@@ -71,11 +71,12 @@ namespace TTbarAnalysis
 	  double getMissingPt(const std::vector< MCParticle * > & bdaugthers, const  std::vector< MCParticle * > & cdaughters, Vertex * vertex);
 	  void WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks);
 	  void WriteMisReco(std::vector< MCParticle * > * particles);
+	  void GetAsymmetry(std::vector< MCParticle * > & particles);
 	  void ClearVariables(); 
 	 protected:
 	
-	  /** Input collection name.
-	   */
+	  // Input/output collection names
+	  
 	  std::string _colName ;
 	  std::string _outputcolName;
 	  std::string _outputquarkcolName;
@@ -83,11 +84,19 @@ namespace TTbarAnalysis
 	  std::string _outputProngsName; 
 	  std::string _colRelName;
 	  std::string _outputBbarStarName; 
-	  std::vector<MESONS> _pdgs;
+
+	  // Parameters
+
+	  std::vector<PDGTYPE> _pdgs;
+	  IntVec inputPdg;
 	  int _tagParameter;
+	  int _initialQuarkPDGparameter;
 	  float _aParameter;
 	  float _bParameter;
 	  int _writeBonlyParameter;
+	  int _writeROOTparameter;
+
+	  // Root variables
 	  TFile * _hfile;
 	  TTree * _hTree;
 	  TTree * _hVertexTree;
@@ -96,6 +105,7 @@ namespace TTbarAnalysis
 	  TTree * _hMisRecoTree;
 	  std::string _hfilename ;
 	  
+	  // Inner variables
 	  int _tag;
 	  int _numberOfB0;
 	  float _firstVertexDistance[2];
@@ -133,6 +143,8 @@ namespace TTbarAnalysis
 	  int _cbarnumber_f;
 	  float _bptmiss;
 	  float _bbarptmiss;
+	  float _cosquark;
+	  float _cosantiquark;
 
 	
 	  static const int MAXV = 15;

@@ -51,7 +51,7 @@ namespace TTbarAnalysis
 	{
 		return myPDG;
 	}
-	EVENT::MCParticle * DecayChain::Find(MESONS type) const
+	EVENT::MCParticle * DecayChain::Find(PDGTYPE type) const
 	{
 		vector<int> pdg =  ConstantStorage::GET_PDG(type);
 		for (int i = 0; i < GetSize(); i++) 

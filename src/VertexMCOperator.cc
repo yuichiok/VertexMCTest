@@ -23,11 +23,11 @@ namespace TTbarAnalysis
 		
 		vector< Vertex * > * result = new vector< Vertex * >();
 		const double * ip = chain->Get(0)->getVertex();
-		for (int i = 1; i < chain->GetSize(); i++) // <<==============================
+		for (unsigned int i = 1; i < chain->GetSize(); i++) // <<==============================
 		{
 			result->push_back(construct(chain->Get(i), ip, chain->GetParentPDG(), i+1));
 		}
-		for (int i = 0; i < result->size(); i++) 
+		for (unsigned int i = 0; i < result->size(); i++) 
 		{
 			addParticle(result->at(i), chain->Get(i));
 		}
@@ -75,7 +75,7 @@ namespace TTbarAnalysis
 		}
 		MyVertex * myvertex = static_cast< MyVertex * >(vertex);
 		myvertex->__SetMCParticles(particles);
-		std::cout << "Added " << myvertex->__GetMCParticles().size() << " particles!\n";
+		//std::cout << "Added " << myvertex->__GetMCParticles().size() << " particles!\n";
 
 	}
 	void VertexMCOperator::addParticle(Vertex * vertex, MCParticle * particle)

@@ -50,7 +50,7 @@ namespace TTbarAnalysis
 	{
 		return myNonTrackableParticlesPDGs;
 	}
-	const std::vector<int> & ConstantStorage::GET_PDG(MESONS type)
+	const std::vector<int> & ConstantStorage::GET_PDG(PDGTYPE type)
 	{
 		switch(type)
 		{

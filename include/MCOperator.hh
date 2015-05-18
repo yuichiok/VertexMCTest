@@ -31,23 +31,24 @@ namespace TTbarAnalysis
 		//
 		//	Methods
 		//
-			bool CheckProcessForPair(int pdg);
+			//bool CheckProcessForPair(int pdg);
+			std::vector< EVENT::MCParticle * > *  CheckProcessForPair(int pdg);
 			bool IsReconstructed(EVENT::MCParticle * particle);
 			std::vector< EVENT::MCParticle * > GetPairParticles(int pdg);
-			std::vector< EVENT::MCParticle * > GetPairParticles(MESONS type);
+			std::vector< EVENT::MCParticle * > GetPairParticles(PDGTYPE type);
 			float GetAccuracy(EVENT::MCParticle * particle, float a, float b);
-			DecayChain * Construct(std::string name, int pdg, std::vector<MESONS> typeOfProducts);
+			DecayChain * Construct(std::string name, int pdg, std::vector<PDGTYPE> typeOfProducts);
 			bool CheckForUnification(EVENT::MCParticle * particle, int pdg);
-			bool CheckParticle(EVENT::MCParticle * particle, MESONS type);
-			std::vector< EVENT::MCParticle * > SelectDaughtersOfType(EVENT::MCParticle * parent, MESONS type);
-			MESONS GetParticleType(EVENT::MCParticle * particle); 
-			EVENT::MCParticle * FindExceptionalChild(EVENT::MCParticle * parent, MESONS parentType);
-			EVENT::MCParticle * FindYoungestChild(EVENT::MCParticle * parent, MESONS type);
+			bool CheckParticle(EVENT::MCParticle * particle, PDGTYPE type);
+			std::vector< EVENT::MCParticle * > SelectDaughtersOfType(EVENT::MCParticle * parent, PDGTYPE type);
+			PDGTYPE GetParticleType(EVENT::MCParticle * particle); 
+			EVENT::MCParticle * FindExceptionalChild(EVENT::MCParticle * parent, PDGTYPE parentType);
+			EVENT::MCParticle * FindYoungestChild(EVENT::MCParticle * parent, PDGTYPE type);
 			bool CheckForColorString(EVENT::MCParticle * daughter, int pdgOfParent);
-			EVENT::MCParticle * GetConsistentDaughter(EVENT::MCParticle * parent, EVENT::MCParticle * service, MESONS type);
+			EVENT::MCParticle * GetConsistentDaughter(EVENT::MCParticle * parent, EVENT::MCParticle * service, PDGTYPE type);
 			std::vector< EVENT::MCParticle * > SelectStableCloseDaughters(EVENT::MCParticle * parent,int excludePDG = 0, bool selectReco = false, std::vector<EVENT::MCParticle *> * misReconstructed = NULL);//
 			bool CheckCompatibility(const std::vector< EVENT::MCParticle * > & daughters, EVENT::MCParticle * parent, int plusCharge = 0);
-			DecayChain * RefineDecayChain(DecayChain * initial, std::vector<MESONS> typeOfProducts);
+			DecayChain * RefineDecayChain(DecayChain * initial, std::vector<PDGTYPE> typeOfProducts);
 			std::vector< EVENT::MCParticle * > CheckDaughterVisibility(const std::vector< EVENT::MCParticle * > & daughters);
 		private:
 		//

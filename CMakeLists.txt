@@ -6,7 +6,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
 
 
 # project name
-PROJECT( TrashMCProcessor )
+PROJECT( TruthVertexFinder )
 
 
 # project version
@@ -47,7 +47,7 @@ LINK_LIBRARIES( ${ROOT_LIBRARIES} )
 
 ### DOCUMENTATION ###########################################################
 
-OPTION( INSTALL_DOC "Set to OFF to skip build/install Documentation" OFF )
+OPTION( INSTALL_DOC "Set to OFF to skip build/install Documentation" ON )
 
 IF( INSTALL_DOC AND EXISTS "${PROJECT_SOURCE_DIR}/doc/CMakeLists.txt" )
     ADD_SUBDIRECTORY( ./doc )

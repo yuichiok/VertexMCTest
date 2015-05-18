@@ -15,7 +15,7 @@ namespace TTbarAnalysis
 		myPrimaryVertex[2] = 0.0;
 		myAngleCut = 0.5; // \pi/4
 	}
-	DecayChain * MCOperator::RefineDecayChain(DecayChain * initial, vector<MESONS> typeOfProducts)
+	DecayChain * MCOperator::RefineDecayChain(DecayChain * initial, vector<PDGTYPE> typeOfProducts)
 	{
 		if (!initial || initial->GetSize() < 2) 
 		{
@@ -45,7 +45,7 @@ namespace TTbarAnalysis
 		result->Add(initial->Get(size-1));
 		return result;
 	}
-	DecayChain * MCOperator::Construct(string name, int pdg, vector<MESONS> typeOfProducts)
+	DecayChain * MCOperator::Construct(string name, int pdg, vector<PDGTYPE> typeOfProducts)
 	{
 		DecayChain * result = new DecayChain(name, pdg);
 		int number = myCollection->getNumberOfElements();
@@ -65,9 +65,9 @@ namespace TTbarAnalysis
 		//			std::cout << "WARNING: found a quark-antiquark merging!\n";
 					continue;
 				}
-				for (int j = 0; j < typeOfProducts.size(); j++) 
+				for (unsigned int j = 0; j < typeOfProducts.size(); j++) 
 				{
-					MESONS currentPDG = typeOfProducts[j];
+					PDGTYPE currentPDG = typeOfProducts[j];
 					MCParticle * found = FindYoungestChild(particle, currentPDG);
 					if (found) 
 					{
@@ -118,7 +118,7 @@ namespace TTbarAnalysis
 			vector< MCParticle * > grandDaughters = daughters[0]->getDaughters();
 			bool foundParticle = false;
 			bool foundAntiparticle = false;
-			for (int i = 0; i < grandDaughters.size(); i++) 
+			for (unsigned int i = 0; i < grandDaughters.size(); i++) 
 			{
 				if (grandDaughters[i]->getPDG() == pdg) 
 				{
@@ -134,11 +134,11 @@ namespace TTbarAnalysis
 		return false;
 
 	}
-	bool MCOperator::CheckParticle(MCParticle * particle, MESONS type)
+	bool MCOperator::CheckParticle(MCParticle * particle, PDGTYPE type)
 	{
 		bool result = false;
 		vector<int> pdg =  ConstantStorage::GET_PDG(type);
-		for (int i = 0; i < pdg.size(); i++) 
+		for (unsigned int i = 0; i < pdg.size(); i++) 
 		{
 			if (abs(particle->getPDG()) == pdg[i]) 
 			{
@@ -158,7 +158,7 @@ namespace TTbarAnalysis
 			{
 				vector< MCParticle * > grandParents = parent->getParents();
 				int count = 0;
-				for (int i = 0; i < grandParents.size(); i++) 
+				for (unsigned int i = 0; i < grandParents.size(); i++) 
 				{
 					if (abs(grandParents[i]->getPDG()) == abs(pdgOfParent)) 
 					{
@@ -175,10 +175,10 @@ namespace TTbarAnalysis
 		return false;
 	}
 
-	MCParticle * MCOperator::GetConsistentDaughter(MCParticle * parent, MCParticle * service, MESONS type)
+	MCParticle * MCOperator::GetConsistentDaughter(MCParticle * parent, MCParticle * service, PDGTYPE type)
 	{
 		vector< MCParticle * > daughters = SelectDaughtersOfType(service, type); //service->getDaughters();
-		//std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
+		std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
 		int size = daughters.size();
 		float angle[size];
 		if (size == 1) 
@@ -265,15 +265,15 @@ namespace TTbarAnalysis
 		return nvtx > 0 && weights[0] > 0.5;
 
 	}
-	MESONS MCOperator::GetParticleType(MCParticle * particle)
+	PDGTYPE MCOperator::GetParticleType(MCParticle * particle)
 	{
-		MESONS result = EXCEPTIONAL_MESONS;
+		PDGTYPE result = EXCEPTIONAL_PDGTYPE;
 		int count = _max_MESONS;
 		for (int i = 1; i < count; i++) 
 		{
-			MESONS candidate = static_cast<MESONS>(i);
+			PDGTYPE candidate = static_cast<PDGTYPE>(i);
 			vector<int> pdg =  ConstantStorage::GET_PDG(candidate);
-			for (int j = 0; j < pdg.size(); j++) 
+			for (unsigned int j = 0; j < pdg.size(); j++) 
 			{
 				if (abs(particle->getPDG()) == pdg[j]) 
 				{
@@ -285,7 +285,7 @@ namespace TTbarAnalysis
 		return result;
 
 	}
-	MCParticle * MCOperator::FindExceptionalChild(MCParticle * parent, MESONS parentType)
+	MCParticle * MCOperator::FindExceptionalChild(MCParticle * parent, PDGTYPE parentType)
 	{
 		if (!parent) 
 		{
@@ -298,17 +298,17 @@ namespace TTbarAnalysis
 			//std::cout<<"ERROR: Found 0 daughters!\n";
 			return NULL;
 		}
-		if (parentType == EXCEPTIONAL_MESONS) 
+		if (parentType == EXCEPTIONAL_PDGTYPE) 
 		{
 			parentType = GetParticleType(parent);
-			if (parentType == EXCEPTIONAL_MESONS) 
+			if (parentType == EXCEPTIONAL_PDGTYPE) 
 			{
 				std::cout << "ERROR: Probably, parent is not meson, to be continue....\n";
 				return NULL;
 			}
 		}
 		bool found = false;
-		for (int i = 0; i < daughters.size(); i++) 
+		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters.at(i);
 			if (CheckParticle(daughter,parentType)) 
@@ -323,7 +323,7 @@ namespace TTbarAnalysis
 			return daughters[0];
 		}
 		//std::cout<<"Not found in I gen. Checking next gen.\n";
-		for (int i = 0; i < daughters.size(); i++) 
+		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters.at(i);
 			if (daughter->getEnergy() < 1.0 && daughter->getMass() < 300.0) 
@@ -335,16 +335,16 @@ namespace TTbarAnalysis
 		}
 		return NULL;
 	}
-	MCParticle * MCOperator::FindYoungestChild(MCParticle * parent, MESONS type)
+	MCParticle * MCOperator::FindYoungestChild(MCParticle * parent, PDGTYPE type)
 	{
 		if (!parent) 
 		{
 			//std::cout << "ERROR: Input particle is NULL!\n";
 			return NULL;
 		}
-		if (type == EXCEPTIONAL_MESONS) 
+		if (type == EXCEPTIONAL_PDGTYPE) 
 		{
-			return FindExceptionalChild(parent, EXCEPTIONAL_MESONS);
+			return FindExceptionalChild(parent, EXCEPTIONAL_PDGTYPE);
 		}
 		vector< MCParticle * > daughters = parent->getDaughters();
 		if (daughters.size() < 1) 
@@ -355,7 +355,7 @@ namespace TTbarAnalysis
 		//std::cout<<"Checking " << daughters.size() <<" I gen of daughters. \n";
 		MCParticle * result = NULL;
 		int count = 0;
-		for (int i = 0; i < daughters.size(); i++) 
+		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters.at(i);
 			if (CheckParticle(daughter,type)) 
@@ -367,21 +367,21 @@ namespace TTbarAnalysis
 		}
 		if (result) 
 		{
-			if (count > 1 && (type == CHARMED_MESONS || type == CHARMED_HADRONS)) 
+			if (count > 1 && abs(parent->getPDG()) !=92  && (type == CHARMED_MESONS || type == CHARMED_HADRONS)) 
 			{
-				std::cout<<"FATAL: Daughter multiplicity found for meson type " << type <<"!\n";
+				std::cout<<"FATAL: Daughter multiplicity found for meson type " << type << " and parent " << parent->getPDG() <<"!\n";
 				return NULL;
 			}
 			return result;
 		}
 		//std::cout<<"Not found in I gen. Checking next gen.\n";
-		for (int i = 0; i < daughters.size(); i++) 
+		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters.at(i);
 			if (daughter->getEnergy() < 1.0 && daughter->getMass() < 300.0) 
 			{
 				//std::cout<<"Daughter does not pass the selection cuts\n";
-				continue;
+				//continue;
 			}
 			return FindYoungestChild(daughter, type);
 		}
@@ -396,11 +396,11 @@ namespace TTbarAnalysis
 		newparticle->setPDG(selected[0]->getPDG() + selected[1]->getPDG());
 		return newparticle;
 	}
-	vector< MCParticle * > MCOperator::SelectDaughtersOfType(MCParticle * parent, MESONS type)
+	vector< MCParticle * > MCOperator::SelectDaughtersOfType(MCParticle * parent, PDGTYPE type)
 	{
 		vector< MCParticle * > daughters = parent->getDaughters();
 		vector< MCParticle * > result;
-		for (int i = 0; i < daughters.size(); i++) 
+		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			if (CheckParticle(daughters[i], type)) 
 			{
@@ -445,7 +445,7 @@ namespace TTbarAnalysis
 		}
 		return pair;
 	}
-	vector< MCParticle * > MCOperator::GetPairParticles(MESONS type)
+	vector< MCParticle * > MCOperator::GetPairParticles(PDGTYPE type)
 	{
 		vector< MCParticle * > pair;
 		int number = myCollection->getNumberOfElements();
@@ -464,7 +464,7 @@ namespace TTbarAnalysis
 		}
 		return pair;
 	}
-	bool MCOperator::CheckProcessForPair(int pdg)
+	/*bool MCOperator::CheckProcessForPair(int pdg)
 	{
 		pdg = abs(pdg);
 		if (pdg < 1) 
@@ -488,6 +488,36 @@ namespace TTbarAnalysis
 		}
 		std::cout<<"INFO: " << countParticle << " quarks and " << countAntiparticle << " antiquarks\n";
 		return countParticle && countAntiparticle;
+	}//*/
+	vector< MCParticle * > * MCOperator::CheckProcessForPair(int pdg)
+	{
+		pdg = abs(pdg);
+		if (pdg < 1) 
+		{
+		        return false;
+		}
+		MCParticle * particle = NULL;
+		MCParticle * antiparticle = NULL;
+		vector< MCParticle * > * result = NULL;
+		for (int i = 0; i < 100; i++) 
+		{
+			MCParticle * candidate = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) );
+			if (candidate->getPDG() == pdg && !particle) 
+			{
+				particle = candidate;
+			}
+			if (candidate->getPDG() == -pdg && !antiparticle) 
+			{
+				antiparticle = candidate;
+			}
+		}
+		if (particle && antiparticle) 
+		{
+			result = new vector< MCParticle * >();
+			result->push_back(particle);
+			result->push_back(antiparticle);
+		}
+		return result;
 	}
 	vector< MCParticle * > MCOperator::SelectStableCloseDaughters(MCParticle * parent,int excludePDG, bool selectReco, vector<MCParticle *> * misReconstructed)
 	{
@@ -509,7 +539,7 @@ namespace TTbarAnalysis
 			return result;
 		}
 		bool finished = false;
-		for (int i = 0; i < daughters.size(); i++) 
+		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters[i];
 			if (CheckParticle(daughter, TRACKABLE_PARTICLES))
@@ -536,7 +566,7 @@ namespace TTbarAnalysis
 			else 
 			{
 				vector< MCParticle * > grannies = SelectStableCloseDaughters(daughter, excludePDG);
-				for (int j = 0; j < grannies.size(); j++) 
+				for (unsigned int j = 0; j < grannies.size(); j++) 
 				{
 					result.push_back(grannies[j]);
 				}
@@ -580,15 +610,11 @@ namespace TTbarAnalysis
 	{
 		int size = daughters.size();
 		vector< MCParticle * > filtered;
-		double ip[3];
-		ip[0] = 0.0;
-		ip[1] = 0.0;
-		ip[2] = 0.0;
 		for (int i = 0; i < size; i++) 
 		{
 			MCParticle * daughter = daughters[i];
 			vector< float > direction = MathOperator::getDirection(daughter->getMomentum());
-			float offset = MathOperator::getDistanceTo(ip, direction, daughter->getVertex());
+			float offset = MathOperator::getDistanceTo(myPrimaryVertex, direction, daughter->getVertex());
 			float pt = MathOperator::getPt(daughter->getMomentum());
 			float p = MathOperator::getModule(daughter->getMomentum());
 			float eta = MathOperator::getAngles(direction)[1];
