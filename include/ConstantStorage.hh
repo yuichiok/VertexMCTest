@@ -219,6 +219,7 @@ namespace TTbarAnalysis
 				myNonTrackableParticlesPDGs.push_back(111);
 				myNonTrackableParticlesPDGs.push_back(22);
 				myNonTrackableParticlesPDGs.push_back(2112);
+				myNonTrackableParticlesPDGs.push_back(3122);
 				myNonTrackableParticlesPDGs.push_back(130);
 				myNonTrackableParticlesPDGs.push_back(310);
 			}
