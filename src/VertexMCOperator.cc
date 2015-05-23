@@ -56,7 +56,7 @@ namespace TTbarAnalysis
 	{
 		if (!vertex || particles.size() == 0) 
 		{
-			std::cout << "ERRORMC: argument is null!\n";
+			streamlog_out(DEBUG) << "ERRORMC: argument is null!\n";
 			return;
 		}
 		ReconstructedParticle * reco = vertex->getAssociatedParticle();
@@ -69,20 +69,20 @@ namespace TTbarAnalysis
 			}
 			else 
 			{
-				std::cout << "ERROR: Corrupted vertex!\n";
+				streamlog_out(DEBUG) << "ERROR: Corrupted vertex!\n";
 
 			}
 		}
 		MyVertex * myvertex = static_cast< MyVertex * >(vertex);
 		myvertex->__SetMCParticles(particles);
-		//std::cout << "Added " << myvertex->__GetMCParticles().size() << " particles!\n";
+		//streamlog_out(DEBUG) << "Added " << myvertex->__GetMCParticles().size() << " particles!\n";
 
 	}
 	void VertexMCOperator::addParticle(Vertex * vertex, MCParticle * particle)
 	{
 		if (!vertex || !particle) 
 		{
-			std::cout << "ERRORMC: argument is null!\n";
+			streamlog_out(DEBUG) << "ERRORMC: argument is null!\n";
 			return;
 		}
 		ReconstructedParticle * reco = translate(particle);
@@ -93,7 +93,7 @@ namespace TTbarAnalysis
 	{
 		LCRelationNavigator navigator(myRelCollection);
 		int nvtx = navigator.getRelatedFromObjects(particle).size();
-		std::cout << "Particles: " << nvtx <<'\n';
+		streamlog_out(DEBUG) << "Particles: " << nvtx <<'\n';
 		ReconstructedParticle * reco = NULL; // check!!!
 		int winner = -1;
 		float weight = 0.0;

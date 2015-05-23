@@ -1,5 +1,6 @@
 #include <EVENT/MCParticle.h>
 #include <IMPL/ReconstructedParticleImpl.h>
+#include "marlin/VerbosityLevels.h"
 
 #include <EVENT/LCCollection.h>
 #include <UTIL/LCRelationNavigator.h>

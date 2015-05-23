@@ -12,6 +12,7 @@
 #include <UTIL/PIDHandler.h>
 #include <UTIL/LCRelationNavigator.h>
 
+#include "marlin/VerbosityLevels.h"
 #ifndef _MCOperator_hh
 #define _MCOperator_hh
 namespace TTbarAnalysis 

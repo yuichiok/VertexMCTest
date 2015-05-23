@@ -55,14 +55,14 @@ namespace TTbarAnalysis
 			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) ) ;
 			if (i > 100 && result->GetSize() == 0) 
 			{
-				std::cout << "WARNING: EVENT RUN OUT OF TRIALS!\n";
+				streamlog_out(DEBUG) << "WARNING: EVENT RUN OUT OF TRIALS!\n";
 				break;
 			}
 			if (particle->getPDG() == pdg) 
 			{
 				if (CheckForUnification(particle, pdg)) 
 				{
-		//			std::cout << "WARNING: found a quark-antiquark merging!\n";
+		//			streamlog_out(DEBUG) << "WARNING: found a quark-antiquark merging!\n";
 					continue;
 				}
 				for (unsigned int j = 0; j < typeOfProducts.size(); j++) 
@@ -166,7 +166,7 @@ namespace TTbarAnalysis
 					}
 					if (count > 1) 
 					{
-						std::cout << "United color string found for PDG " << pdgOfParent <<"!\n";
+						streamlog_out(DEBUG) << "United color string found for PDG " << pdgOfParent <<"!\n";
 						return true;
 					}
 				}
@@ -178,21 +178,21 @@ namespace TTbarAnalysis
 	MCParticle * MCOperator::GetConsistentDaughter(MCParticle * parent, MCParticle * service, PDGTYPE type)
 	{
 		vector< MCParticle * > daughters = SelectDaughtersOfType(service, type); //service->getDaughters();
-		std::cout << "Parent PDG: " << parent->getPDG() << ";\n";
+		streamlog_out(DEBUG) << "Parent PDG: " << parent->getPDG() << ";\n";
 		int size = daughters.size();
 		float angle[size];
 		if (size == 1) 
 		{
-			 //std::cout << "We have only 1 meson of type " << type << '\n';
+			 //streamlog_out(DEBUG) << "We have only 1 meson of type " << type << '\n';
 		}
 		float dE = 10.0;
 		for (int i = 0; i < size; i++) 
 		{
 			MCParticle * daughter = daughters[i];
-			//std::cout << "Daughter PDG: " << daughter->getPDG() << ";\n";
+			//streamlog_out(DEBUG) << "Daughter PDG: " << daughter->getPDG() << ";\n";
 			if (MathOperator::getModule(daughter->getMomentum()) > MathOperator::getModule(parent->getMomentum())+dE)// || 
 			{
-				std::cout << "Discarded by energy!\n";
+				streamlog_out(DEBUG) << "Discarded by energy!\n";
 				//continue;
 			}
 			if (daughter->getCharge()*parent->getCharge() > 0.0 
@@ -202,17 +202,17 @@ namespace TTbarAnalysis
 				//&& type != CHARMED_HADRONS 
 				//&& type != CHARMED_BARYONS)
 			{
-				//std::cout << "Same sign of charge!\n";
+				//streamlog_out(DEBUG) << "Same sign of charge!\n";
 				return daughter;
 			}
 			angle[i] = MathOperator::getAngle(daughter->getMomentum(), parent->getMomentum());
 		}
 		float minAngle = myAngleCut;
 		int winner = -1;
-		//std::cout << "Checking angles...\n";
+		//streamlog_out(DEBUG) << "Checking angles...\n";
 		for (int i = 0; i < size; i++) 
 		{
-			//std::cout << "Angle " << i << ": " << angle[i] << '\n';
+			//streamlog_out(DEBUG) << "Angle " << i << ": " << angle[i] << '\n';
 			if (angle[i] < minAngle)// && 
 			   //daughters[i]->getEnergy() < parent->getEnergy()+dE &&
 			   //(daughters[i]->getCharge()*parent->getCharge() > -0.0001 && ( type == BOTTOM_MESONS || type == CHARMED_MESONS || type == STRANGE_MESONS ))) 
@@ -223,15 +223,15 @@ namespace TTbarAnalysis
 		}
 		if (winner > -1) 
 		{
-			//std::cout << "Choosing angle " << winner <<  "\n";
+			//streamlog_out(DEBUG) << "Choosing angle " << winner <<  "\n";
 			if (daughters[winner]->getCharge()*parent->getCharge() < -0.0001  && type != BOTTOM_HADRONS && type != BOTTOM_BARYONS) 
 			{
-				std::cout << "INFO: Charge is wrong!\n";
+				streamlog_out(DEBUG) << "INFO: Charge is wrong!\n";
 				
 			}
 			return daughters[winner];
 		}
-		//std::cout << "Angle is wrong!\n";
+		//streamlog_out(DEBUG) << "Angle is wrong!\n";
 		return NULL;
 	
 	}
@@ -242,7 +242,7 @@ namespace TTbarAnalysis
 		int nvtx = obj.size();
 		if (nvtx < 1) 
 		{
-			std::cout << "INFO: Particle not reconstructed\n";
+			streamlog_out(DEBUG) << "INFO: Particle not reconstructed\n";
 			return false;
 		}
 		const vector< float > weights = navigator.getRelatedFromWeights(particle);
@@ -289,13 +289,13 @@ namespace TTbarAnalysis
 	{
 		if (!parent) 
 		{
-			//std::cout << "ERROR: Input particle is NULL!\n";
+			//streamlog_out(DEBUG) << "ERROR: Input particle is NULL!\n";
 			return NULL;
 		}
 		vector< MCParticle * > daughters = parent->getDaughters();
 		if (daughters.size() < 1) 
 		{
-			//std::cout<<"ERROR: Found 0 daughters!\n";
+			//streamlog_out(DEBUG)<<"ERROR: Found 0 daughters!\n";
 			return NULL;
 		}
 		if (parentType == EXCEPTIONAL_PDGTYPE) 
@@ -303,7 +303,7 @@ namespace TTbarAnalysis
 			parentType = GetParticleType(parent);
 			if (parentType == EXCEPTIONAL_PDGTYPE) 
 			{
-				std::cout << "ERROR: Probably, parent is not meson, to be continue....\n";
+				streamlog_out(DEBUG) << "ERROR: Probably, parent is not meson, to be continue....\n";
 				return NULL;
 			}
 		}
@@ -313,22 +313,22 @@ namespace TTbarAnalysis
 			MCParticle * daughter = daughters.at(i);
 			if (CheckParticle(daughter,parentType)) 
 			{
-				//std::cout << "Found PDG to exclude: " << daughter->getPDG() << "; Going recursion\n";
+				//streamlog_out(DEBUG) << "Found PDG to exclude: " << daughter->getPDG() << "; Going recursion\n";
 				found = true;
 			}
 		}
 		if (!found) 
 		{
-			//std::cout << "Found state without initial mesons!\n";
+			//streamlog_out(DEBUG) << "Found state without initial mesons!\n";
 			return daughters[0];
 		}
-		//std::cout<<"Not found in I gen. Checking next gen.\n";
+		//streamlog_out(DEBUG)<<"Not found in I gen. Checking next gen.\n";
 		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters.at(i);
 			if (daughter->getEnergy() < 1.0 && daughter->getMass() < 300.0) 
 			{
-				//std::cout<<"Daughter does not pass the selection cuts\n";
+				//streamlog_out(DEBUG)<<"Daughter does not pass the selection cuts\n";
 				continue;
 			}
 			return FindExceptionalChild(daughter, parentType);
@@ -339,7 +339,7 @@ namespace TTbarAnalysis
 	{
 		if (!parent) 
 		{
-			//std::cout << "ERROR: Input particle is NULL!\n";
+			//streamlog_out(DEBUG) << "ERROR: Input particle is NULL!\n";
 			return NULL;
 		}
 		if (type == EXCEPTIONAL_PDGTYPE) 
@@ -349,10 +349,10 @@ namespace TTbarAnalysis
 		vector< MCParticle * > daughters = parent->getDaughters();
 		if (daughters.size() < 1) 
 		{
-			//std::cout<<"ERROR: Found 0 daughters!\n";
+			//streamlog_out(DEBUG)<<"ERROR: Found 0 daughters!\n";
 			return NULL;
 		}
-		//std::cout<<"Checking " << daughters.size() <<" I gen of daughters. \n";
+		//streamlog_out(DEBUG)<<"Checking " << daughters.size() <<" I gen of daughters. \n";
 		MCParticle * result = NULL;
 		int count = 0;
 		for (unsigned int i = 0; i < daughters.size(); i++) 
@@ -360,7 +360,7 @@ namespace TTbarAnalysis
 			MCParticle * daughter = daughters.at(i);
 			if (CheckParticle(daughter,type)) 
 			{
-				//std::cout << "Found PDG: " << daughter->getPDG() << ";\n";
+				//streamlog_out(DEBUG) << "Found PDG: " << daughter->getPDG() << ";\n";
 				count++;
 				result = daughter;
 			}
@@ -369,18 +369,18 @@ namespace TTbarAnalysis
 		{
 			if (count > 1 && abs(parent->getPDG()) !=92  && (type == CHARMED_MESONS || type == CHARMED_HADRONS)) 
 			{
-				std::cout<<"FATAL: Daughter multiplicity found for meson type " << type << " and parent " << parent->getPDG() <<"!\n";
+				streamlog_out(DEBUG)<<"FATAL: Daughter multiplicity found for meson type " << type << " and parent " << parent->getPDG() <<"!\n";
 				return NULL;
 			}
 			return result;
 		}
-		//std::cout<<"Not found in I gen. Checking next gen.\n";
+		//streamlog_out(DEBUG)<<"Not found in I gen. Checking next gen.\n";
 		for (unsigned int i = 0; i < daughters.size(); i++) 
 		{
 			MCParticle * daughter = daughters.at(i);
 			if (daughter->getEnergy() < 1.0 && daughter->getMass() < 300.0) 
 			{
-				//std::cout<<"Daughter does not pass the selection cuts\n";
+				//streamlog_out(DEBUG)<<"Daughter does not pass the selection cuts\n";
 				//continue;
 			}
 			return FindYoungestChild(daughter, type);
@@ -436,12 +436,12 @@ namespace TTbarAnalysis
 		if (b) 
 		{
 			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*b)));
-			std::cout<<"INFO: Found b!\n";
+			streamlog_out(DEBUG)<<"INFO: Found b!\n";
 		}
 		if (bbar) 
 		{
 			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*bbar)));
-			std::cout<<"INFO: Found bbar!\n";
+			streamlog_out(DEBUG)<<"INFO: Found bbar!\n";
 		}
 		return pair;
 	}
@@ -455,7 +455,7 @@ namespace TTbarAnalysis
 			if (CheckParticle(particle, type) && particle->getParents()[0]->getPDG() == 92) 
 			{
 				pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*particle)));
-				std::cout<<"Found a suitable particle of type " << particle->getPDG() << '\n';
+				streamlog_out(DEBUG)<<"Found a suitable particle of type " << particle->getPDG() << '\n';
 			}
 			if (pair.size() > 1) 
 			{
@@ -486,7 +486,7 @@ namespace TTbarAnalysis
 				countAntiparticle++;
 			}
 		}
-		std::cout<<"INFO: " << countParticle << " quarks and " << countAntiparticle << " antiquarks\n";
+		streamlog_out(DEBUG)<<"INFO: " << countParticle << " quarks and " << countAntiparticle << " antiquarks\n";
 		return countParticle && countAntiparticle;
 	}//*/
 	vector< MCParticle * > * MCOperator::CheckProcessForPair(int pdg)
@@ -535,7 +535,7 @@ namespace TTbarAnalysis
 		}
 		if ( parent && MathOperator::getDistance(daughters[0]->getVertex(), parent->getVertex()) > 100.0) // Long distance!!!
 		{
-			std::cout<<"WARNING: Long-lived noninteracting particle " << parent->getPDG() <<"!\n";
+			streamlog_out(DEBUG)<<"WARNING: Long-lived noninteracting particle " << parent->getPDG() <<"!\n";
 			return result;
 		}
 		bool finished = false;
@@ -544,10 +544,10 @@ namespace TTbarAnalysis
 			MCParticle * daughter = daughters[i];
 			if (CheckParticle(daughter, TRACKABLE_PARTICLES))
 			{
-				//std::cout<<"\tDaughter reached calorimeter!\n";
+				//streamlog_out(DEBUG)<<"\tDaughter reached calorimeter!\n";
 				if (MathOperator::getModule(daughter->getMomentum()) < 0.1) 
 				{
-					//std::cout<<"CAUTION: Low momentum particle of " << MathOperator::getModule(daughter->getMomentum()) << " GeV!\n";
+					//streamlog_out(DEBUG)<<"CAUTION: Low momentum particle of " << MathOperator::getModule(daughter->getMomentum()) << " GeV!\n";
 				}
 				finished = true;
 				if (selectReco && IsReconstructed(daughter)) 
@@ -596,12 +596,12 @@ namespace TTbarAnalysis
 		}
 		if (charge + plusCharge != (int)(parent->getCharge())) 
 		{
-			std::cout<< "CAUTION: Charge is not compatible: charges " << charge << " and " << parent->getCharge() << ", " << plusCharge <<"!\n";
+			streamlog_out(DEBUG)<< "CAUTION: Charge is not compatible: charges " << charge << " and " << parent->getCharge() << ", " << plusCharge <<"!\n";
 			return false;
 		}
 		if (mass > parent->getMass()) 
 		{
-			std::cout<< "CAUTION: Mass is not compatible!\n";
+			streamlog_out(DEBUG)<< "CAUTION: Mass is not compatible!\n";
 			return false;
 		}
 		return true;
@@ -618,7 +618,7 @@ namespace TTbarAnalysis
 			float pt = MathOperator::getPt(daughter->getMomentum());
 			float p = MathOperator::getModule(daughter->getMomentum());
 			float eta = MathOperator::getAngles(direction)[1];
-			std::cout << "\tPDG: " << daughter->getPDG()
+			streamlog_out(DEBUG) << "\tPDG: " << daughter->getPDG()
 				  << " p: " << p
 				  << " pt: " << pt
 				  << " teta: " << eta

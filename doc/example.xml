@@ -16,6 +16,7 @@ DST.slcio
 
 <!--########  MyMCVertexTest  ######################################## -->
 <processor name="MyMCVertexTest" type="TruthVertexFinder">
+  <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> DEBUG </parameter>
   <parameter name="CollectionName" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
   <parameter name="DecayChainPDGs" type="IntVec">5500	4400	0</parameter>
   <parameter name="writeROOT" type="int">2</parameter>
