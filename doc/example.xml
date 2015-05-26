@@ -16,10 +16,16 @@ DST.slcio
 
 <!--########  MyMCVertexTest  ######################################## -->
 <processor name="MyMCVertexTest" type="TruthVertexFinder">
+  <!-- Verbosity of this processor -->
   <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> DEBUG </parameter>
+  <!-- Input collection name, MCParticlesSkimmed is preferred -->
   <parameter name="CollectionName" type="string" lcioInType="MCParticle"> MCParticlesSkimmed </parameter>
+  <!-- Input pdg codes to look for particle decays -->
+  <!-- Possible values: 500 - B-mesons, 400 - D-mesons, 300 - K-mesons, 5000 - b-baryons, 4000 - c-baryons, 5500 - b-hadrons, 4400 - c-hadrons, 0 - any other particle -->
   <parameter name="DecayChainPDGs" type="IntVec">5500	4400	0</parameter>
+  <!-- This parameter regulates ROOT output: 0 - no ROOT output, 1 - basic ROOT file, 2 - extended ROOT file only if DecayChainPDGs has 3 parameters! -->
   <parameter name="writeROOT" type="int">2</parameter>
+  <!-- Name of output ROOT file -->
   <parameter name="ROOTFileName" type="string">MyMCTest.root</parameter>
 </processor>
 </marlin>
