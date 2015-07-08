@@ -150,6 +150,7 @@ namespace TTbarAnalysis
 		//_hVertexTree->Branch("energyOfParticles", _energyOfParticles, "energyOfParticles[numberOfVertexes][15]/F");
 		_hVertexTree->Branch("momentumOfParticles", _momentumOfParticles, "momentumOfParticles[numberOfVertexes][15]/F");
 		_hVertexTree->Branch("massOfParticles", _massOfParticles, "massOfParticles[numberOfVertexes][15]/F");
+		_hVertexTree->Branch("offsetOfParticles", _offsetOfParticles, "offsetOfParticles[numberOfVertexes][15]/F");
 		_hVertexTree->Branch("interactionOfParticles", _interactionOfParticles, "interactionOfParticles[numberOfVertexes][15]/I");
 		_hTree = new TTree( "Stats", "My test tree!" );
 		_hTree->Branch("tag", &_tag, "tag/I");
@@ -246,6 +247,7 @@ namespace TTbarAnalysis
 		for (unsigned int i = 0; i < vertices->size(); i++) 
 		{
 			Vertex * vertex = vertices->at(i);
+			double * pos = MathOperator::toDoubleArray(vertex->getPosition() , 3);
 			_PDG[_numberOfVertexes] = vertex->getParameters()[1];
 			_generation[_numberOfVertexes] = vertex->getParameters()[2];
 			ReconstructedParticle * particle = vertex->getAssociatedParticle();
@@ -258,6 +260,9 @@ namespace TTbarAnalysis
 			MyVertex * myvertex = static_cast< MyVertex * >(vertex);
 			for (unsigned int j = 0; j < particle->getParticles().size(); j++) 
 			{
+				vector< float > direction = MathOperator::getDirection(particle->getParticles()[j]->getMomentum());
+
+				_offsetOfParticles[_numberOfVertexes][j] = MathOperator::getDistanceTo(ip, direction,pos) ;
 				_momentumOfParticles[_numberOfVertexes][j] = MathOperator::getModule(particle->getParticles()[j]->getMomentum());
 				_massOfParticles[_numberOfVertexes][j] = particle->getParticles()[j]->getMass();
 				_interactionOfParticles[_numberOfVertexes][j] = myvertex->__GetMCParticles()[j]->isDecayedInCalorimeter();
@@ -707,6 +712,7 @@ namespace TTbarAnalysis
 				_energyOfParticles[i][j] = -1.0;
 				_momentumOfParticles[i][j] = -1.0;
 				_massOfParticles[i][j] = -1.0;
+				_offsetOfParticles[i][j] = -1.0;
 				_interactionOfParticles[i][j] = -1;
 			}
 		}

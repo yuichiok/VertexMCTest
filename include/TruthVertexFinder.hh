@@ -159,6 +159,7 @@ namespace TTbarAnalysis
 	  float _energyOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];
 	  float _massOfParticles[MAXV][MAXV];
+	  float _offsetOfParticles[MAXV][MAXV];
 	  int _interactionOfParticles[MAXV][MAXV];
 	
 	  float _bptrack[MAXV];

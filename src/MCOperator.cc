@@ -352,7 +352,7 @@ namespace TTbarAnalysis
 		vector< MCParticle * > daughters = parent->getDaughters();
 		if (daughters.size() < 1) 
 		{
-			streamlog_out(MESSAGE)<<"ERROR: Found 0 daughters!\n";
+			//streamlog_out(MESSAGE)<<"ERROR: Found 0 daughters!\n";
 			return NULL;
 		}
 		//streamlog_out(MESSAGE)<<"Checking " << daughters.size() <<" I gen of daughters. \n";
