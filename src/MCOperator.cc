@@ -422,18 +422,26 @@ namespace TTbarAnalysis
 			return pair;
 		}
 		int number = myCollection->getNumberOfElements();
+		int countParticle = 0;
+		int countAntiparticle = 0;
 		MCParticle * b = NULL;
 		MCParticle * bbar = NULL;
 		for (int i = 0; i < number; i++) 
 		{
 			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) );
-			if (particle->getPDG() == pdg)// && countParticle == 0) 
+			if (particle->getPDG() == pdg && countParticle == 0) 
 			{
 				b = particle;
+				countParticle = 1;
 			}
-			if (particle->getPDG() == -pdg)// && countAntiparticle == 0) 
+			if (particle->getPDG() == -pdg && countAntiparticle == 0) 
 			{
 				bbar =  particle;
+				countAntiparticle = 1;
+			}
+			if (countAntiparticle > 0 && countParticle > 0) 
+			{
+				break;
 			}
 		}
 		if (b) 
@@ -636,5 +644,36 @@ namespace TTbarAnalysis
 			}
 		}
 		return filtered;
+	}
+	int MCOperator::GetOscillation(DecayChain * chain, const vector< MCParticle * > daughters )
+	{
+		int result = 0;
+		if (!chain || chain->GetSize() < 1) 
+		{
+			return result;
+		}
+		MCParticle * b = chain->Get(0);
+		MCParticle * c = chain->Get(1);
+		//result = (float)(c->getPDG()*chain->GetParentPDG()) / abs(c->getPDG()*chain->GetParentPDG()); 
+		//vector< MCParticle * > daughters = c->getDaughters();
+		//static_cast< MyVertex * >(verticies->at(1))->__GetMCParticles();
+		MCParticle * k = NULL;
+		int count = 0;
+		for (unsigned int i = 0; i < daughters.size(); i++) 
+		{
+			if (abs(daughters[i]->getPDG()) == 321) 
+			{
+				k = daughters[i];
+				count++;
+			}
+		}
+		if (count == 0 || count > 1) 
+		{
+			std::cout << "Rejected by count: "  << count << "\n";
+			return result;
+
+		}
+		result = -(float)(k->getPDG()*chain->GetParentPDG()) / abs(k->getPDG()*chain->GetParentPDG());//*/
+		return result;
 	}
 } /*  */

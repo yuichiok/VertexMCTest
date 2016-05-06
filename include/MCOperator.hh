@@ -51,6 +51,7 @@ namespace TTbarAnalysis
 			bool CheckCompatibility(const std::vector< EVENT::MCParticle * > & daughters, EVENT::MCParticle * parent, int plusCharge = 0);
 			DecayChain * RefineDecayChain(DecayChain * initial, std::vector<PDGTYPE> typeOfProducts);
 			std::vector< EVENT::MCParticle * > CheckDaughterVisibility(const std::vector< EVENT::MCParticle * > & daughters);
+			int GetOscillation(DecayChain * chain, const std::vector< EVENT::MCParticle * > daughters);
 		private:
 		//
 		//	Data

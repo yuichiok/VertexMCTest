@@ -1,5 +1,5 @@
-#ifndef TruthVertexFinder_h
-#define TruthVertexFinder_h 1
+#ifndef TruthVertexFinderAlpha_h
+#define TruthVertexFinderAlpha_h 1
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
@@ -35,7 +35,7 @@ namespace TTbarAnalysis
 	/// vertices from collection of generated particles, ///
 	/// by using a PDG type and daughter/parent relation ///
 	/// relations. 					     ///
-	/// TruthVertexFinder has two main outputs:	     ///
+	/// TruthVertexFinderAlpha has two main outputs:	     ///
 	/// EGProngs - MCParticle type with parameters	     ///
 	/// MCVertex - Vertex type with particles	     ///
 	/// For more info and usage please see doc/ folder   ///
@@ -45,15 +45,15 @@ namespace TTbarAnalysis
 	///	    RICHARD Francois, Supervisor	     ///
 	/// 				designed: 2015-2017  ///
 	////////////////////////////////////////////////////////
-	class TruthVertexFinder : public Processor 
+	class TruthVertexFinderAlpha : public Processor 
 	{
 	  
 	 public:
 	  
-	  virtual Processor*  newProcessor() { return new TruthVertexFinder ; }
+	  virtual Processor*  newProcessor() { return new TruthVertexFinderAlpha ; }
 	  
 	  
-	  TruthVertexFinder() ;
+	  TruthVertexFinderAlpha() ;
 	  
 	  virtual void init() ;
 	  virtual void processRunHeader( LCRunHeader* run ) ;
@@ -80,6 +80,7 @@ namespace TTbarAnalysis
 	  
 	  std::string _colName ;
 	  std::string _outputcolName;
+	  std::string _outputcolRPName;
 	  std::string _outputquarkcolName;
 	  std::string _outputBStarName; 
 	  std::string _outputProngsName; 
@@ -116,6 +117,8 @@ namespace TTbarAnalysis
 	  int _cbarcharge;
 	  int _bcharge;
 	  int _bbarcharge;
+	  int _boscillation;
+	  int _bbaroscillation;
 	  float _baccuracy;
 	  float _bbaraccuracy;
 	  float _bIPdistance;
@@ -132,6 +135,8 @@ namespace TTbarAnalysis
 	  float _cbarmomentum;
 	  float _caccuracy;
 	  float _cbaraccuracy;
+	  float _bcostheta;
+	  float _bbarcostheta;
 	  int _bnumber;
 	  int _bbarnumber;
 	  int _cnumber;
@@ -142,6 +147,8 @@ namespace TTbarAnalysis
 	  int _bbarnumber_f;
 	  int _cnumber_f;
 	  int _cbarnumber_f;
+	  float _bvtxangle;
+	  float _bbarvtxangle;
 	  float _bptmiss;
 	  float _bbarptmiss;
 	  float _cosquark;
@@ -157,7 +164,9 @@ namespace TTbarAnalysis
 	  int _charge[MAXV];
 	  int _numberOfParticles[MAXV];
 	  float _energyOfParticles[MAXV][MAXV];
+	  int _typeOfParticles[MAXV][MAXV];
 	  float _momentumOfParticles[MAXV][MAXV];
+	  float _costhetaOfParticles[MAXV][MAXV];
 	  float _massOfParticles[MAXV][MAXV];
 	  float _offsetOfParticles[MAXV][MAXV];
 	  int _interactionOfParticles[MAXV][MAXV];
