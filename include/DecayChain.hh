@@ -27,6 +27,8 @@ namespace TTbarAnalysis
 			void Add(EVENT::MCParticle * particle);
 			EVENT::MCParticle * Get(int i) ;
 			int GetSize() const;
+			int GetStatus() const;
+			void SetStatus(int status);
 			int GetParentPDG() const;
 			std::string GetName() const;
 			const std::vector< EVENT::MCParticle * > & GetAll() const;
@@ -40,6 +42,7 @@ namespace TTbarAnalysis
 			std::vector< EVENT::MCParticle * > myParticles;
 			std::string myName;
 			int myPDG;
+			int myStatus;
 		//
 		//	Private methods
 		//

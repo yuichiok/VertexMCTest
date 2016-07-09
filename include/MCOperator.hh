@@ -44,7 +44,7 @@ namespace TTbarAnalysis
 			std::vector< EVENT::MCParticle * > SelectDaughtersOfType(EVENT::MCParticle * parent, PDGTYPE type);
 			PDGTYPE GetParticleType(EVENT::MCParticle * particle); 
 			EVENT::MCParticle * FindExceptionalChild(EVENT::MCParticle * parent, PDGTYPE parentType);
-			EVENT::MCParticle * FindYoungestChild(EVENT::MCParticle * parent, PDGTYPE type);
+			EVENT::MCParticle * FindYoungestChild(EVENT::MCParticle * parent, PDGTYPE type, int & error);
 			bool CheckForColorString(EVENT::MCParticle * daughter, int pdgOfParent);
 			EVENT::MCParticle * GetConsistentDaughter(EVENT::MCParticle * parent, EVENT::MCParticle * service, PDGTYPE type);
 			std::vector< EVENT::MCParticle * > SelectStableCloseDaughters(EVENT::MCParticle * parent,int excludePDG = 0, bool selectReco = false, std::vector<EVENT::MCParticle *> * misReconstructed = NULL);//

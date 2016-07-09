@@ -51,6 +51,14 @@ namespace TTbarAnalysis
 	{
 		return myPDG;
 	}
+	int DecayChain::GetStatus() const
+	{
+		return myStatus;
+	}
+	void DecayChain::SetStatus(int status)
+	{
+		myStatus = status;
+	}
 	EVENT::MCParticle * DecayChain::Find(PDGTYPE type) const
 	{
 		vector<int> pdg =  ConstantStorage::GET_PDG(type);

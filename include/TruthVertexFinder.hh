@@ -64,7 +64,7 @@ namespace TTbarAnalysis
 	  void PrintParticle(MCParticle * particle);
 	  void PrintChain(std::vector< MCParticle * > * chain);
 
-	  void WriteVertexCollection(LCEvent * evt, std::vector< Vertex * > * bvertexes, std::vector< Vertex * > * bbarvertexes);
+	  void WriteVertexCollection(LCEvent * evt, std::vector< Vertex * > * bvertexes, std::vector< Vertex * > * bbarvertexes, int bstatus = 0, int bbarstatus = 0);
 	  void Write(std::vector< EVENT::Vertex * > * vertices, int & number);
 	  void Write(MCOperator & opera,DecayChain * chain, std::vector< Vertex * > * bvertexes);
 	  void AddProngs( VertexMCOperator & vertexOperator, MCOperator & opera, DecayChain * chain, std::vector< Vertex * > * vertices, std::vector<int> & parameters, IMPL::LCCollectionVec * col = NULL);

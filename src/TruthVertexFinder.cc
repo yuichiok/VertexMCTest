@@ -390,6 +390,10 @@ namespace TTbarAnalysis
 			int initQuark = abs(_initialQuarkPDGparameter);
 			streamlog_out(MESSAGE) <<"\t|PDG\t\t|Mass\t\t|Charge\t\t|Energy\t\t|Vtx X\t\t|Vtx Y\t\t|Vtx Z\t\t|\n";
 			DecayChain * bChainRaw = opera.Construct(string("b-quark decay chain"), initQuark, _pdgs);
+			if (bChainRaw->GetStatus()) 
+			{
+				streamlog_out(MESSAGE) <<"Double D decay handling: \n";
+			}
 			DecayChain * bChain = opera.RefineDecayChain(bChainRaw, _pdgs);
 			IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE ) ;
 			mc->setSubset();
@@ -441,7 +445,7 @@ namespace TTbarAnalysis
 			}
 			
 			WriteQuarksCollection(evt, bquarks);
-			WriteVertexCollection(evt, bverticies, bbarverticies);
+			WriteVertexCollection(evt, bverticies, bbarverticies, bChainRaw->GetStatus(), bbarChainRaw->GetStatus());
 			
 			evt->addCollection( prongs , _outputProngsName);
 			prongs->parameters().setValues("trackIDs", parameters);
@@ -661,7 +665,7 @@ namespace TTbarAnalysis
 			eta[i] = MathOperator::getAngles(direction)[1];
 		}
 	}
-	void TruthVertexFinderAlpha::WriteVertexCollection(LCEvent * evt, vector< Vertex * > * bvertexes, vector< Vertex * > * bbarvertexes)
+	void TruthVertexFinderAlpha::WriteVertexCollection(LCEvent * evt, vector< Vertex * > * bvertexes, vector< Vertex * > * bbarvertexes, int bstatus, int bbarstatus)
 	{
 		IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( EVENT::LCIO::VERTEX ) ;
 		IMPL::LCCollectionVec * mcrp = new IMPL::LCCollectionVec ( EVENT::LCIO::RECONSTRUCTEDPARTICLE ) ;
@@ -693,6 +697,8 @@ namespace TTbarAnalysis
 		mc->parameters().setValue("GenVertexTag", _tag);
 		mc->parameters().setValue("BBarOscillation", _bbaroscillation);
 		mc->parameters().setValue("BOscillation", _boscillation);
+		mc->parameters().setValue("BStatus", bstatus);
+		mc->parameters().setValue("BbarStatus", bbarstatus);
 		evt->addCollection( mc , _outputcolName ) ;
 		evt->addCollection( mcrp , _outputcolRPName ) ;
 	}

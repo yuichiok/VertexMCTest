@@ -67,8 +67,12 @@ namespace TTbarAnalysis
 				}
 				for (unsigned int j = 0; j < typeOfProducts.size(); j++) 
 				{
+					int errorType = 0;
 					PDGTYPE currentPDG = typeOfProducts[j];
-					MCParticle * found = FindYoungestChild(particle, currentPDG);
+					MCParticle * found = FindYoungestChild(particle, currentPDG, errorType);
+					result->SetStatus(errorType);
+					streamlog_out(MESSAGE) << "WARNING: Status is set to " << errorType <<"!\n";
+
 					if (found) 
 					{
 						if (CheckForColorString(found, pdg)) 
@@ -90,7 +94,10 @@ namespace TTbarAnalysis
 					}
 					else 
 					{
+						result->SetStatus(errorType);
+						streamlog_out(MESSAGE) << "WARNING: Status is set to " << errorType <<"!\n";
 						break;
+
 					}
 					particle =(finished)? found : NULL;
 				}
@@ -334,7 +341,7 @@ namespace TTbarAnalysis
 		}
 		return NULL;
 	}
-	MCParticle * MCOperator::FindYoungestChild(MCParticle * parent, PDGTYPE type)
+	MCParticle * MCOperator::FindYoungestChild(MCParticle * parent, PDGTYPE type, int & error)
 	{
 		if (!parent) 
 		{
@@ -373,6 +380,7 @@ namespace TTbarAnalysis
 			if (count > 1 && abs(parent->getPDG()) !=92  && (type == CHARMED_MESONS || type == CHARMED_HADRONS)) 
 			{
 				streamlog_out(MESSAGE)<<"FATAL: Daughter multiplicity found for meson type " << type << " and parent " << parent->getPDG() <<"!\n";
+				error = 1;
 				return NULL;
 			}
 			return result;
@@ -386,7 +394,7 @@ namespace TTbarAnalysis
 				//streamlog_out(MESSAGE)<<"Daughter does not pass the selection cuts\n";
 				//continue;
 			}
-			return FindYoungestChild(daughter, type);
+			return FindYoungestChild(daughter, type, error);
 		}
 		return NULL;
 	}
