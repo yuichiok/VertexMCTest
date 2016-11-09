@@ -5,7 +5,7 @@
 
 #ifndef MyVertex_h
 #define MyVertex_h 1
-namespace TTbarAnalysis 
+namespace TTbarAnalysisAlpha 
 {
 	class MyVertex : public IMPL::VertexImpl
 	{

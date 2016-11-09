@@ -11,7 +11,7 @@
 #include "MathOperator.hh"
 #ifndef _VertexMCOperator_hh
 #define _VertexMCOperator_hh
-namespace TTbarAnalysis
+namespace TTbarAnalysisAlpha
 {
 	class VertexMCOperator 
 	{

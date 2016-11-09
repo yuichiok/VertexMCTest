@@ -28,7 +28,7 @@ using namespace lcio ;
 using namespace marlin ;
 
 
-namespace TTbarAnalysis 
+namespace TTbarAnalysisAlpha 
 {
 	////////////////////////////////////////////////////////
 	/// This processor is designed to extruct a secondary///
@@ -198,7 +198,7 @@ namespace TTbarAnalysis
 	  int _nRun ;
 	  int _nEvt ;
 	} ;
-} /* TTbarAnalysis */
+} /* TTbarAnalysisAlpha */
 #endif
 
 

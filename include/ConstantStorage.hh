@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
-#ifndef _TTbarAnalysis_h
-#define _TTbarAnalysis_h 1
-namespace TTbarAnalysis 
+#ifndef _TTbarAnalysisAlpha_h
+#define _TTbarAnalysisAlpha_h 1
+namespace TTbarAnalysisAlpha 
 {
 	enum PDGTYPE
 	{
@@ -250,5 +250,5 @@ namespace TTbarAnalysis
 
 
 	};
-} /* TTbarAnalysis */
+} /* TTbarAnalysisAlpha */
 #endif

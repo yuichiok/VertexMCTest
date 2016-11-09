@@ -1,6 +1,6 @@
 #include "ConstantStorage.hh"
 using std::vector;
-namespace TTbarAnalysis 
+namespace TTbarAnalysisAlpha 
 {
 	vector<int> ConstantStorage::myCharmedMesonsPDGs;
 	vector<int> ConstantStorage::myBottomMesonsPDGs;
@@ -85,4 +85,4 @@ namespace TTbarAnalysis
 		}
 	}
 
-} /* TTbarAnalysis */
+} /* TTbarAnalysisAlpha */

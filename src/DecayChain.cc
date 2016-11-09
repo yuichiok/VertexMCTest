@@ -2,7 +2,7 @@
 using std::vector;
 using std::string;
 using EVENT::MCParticle;
-namespace TTbarAnalysis
+namespace TTbarAnalysisAlpha
 {
 	DecayChain ::DecayChain (const vector<MCParticle *> * particles, string name, int pdg)
 	{

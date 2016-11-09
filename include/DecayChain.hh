@@ -6,7 +6,7 @@
 #include "ConstantStorage.hh"
 #ifndef _DecayChain_hh
 #define _DecayChain_hh
-namespace TTbarAnalysis 
+namespace TTbarAnalysisAlpha 
 {
 	class DecayChain 
 	{

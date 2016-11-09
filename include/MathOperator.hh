@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
-namespace TTbarAnalysis 
+namespace TTbarAnalysisAlpha 
 {
 	class MathOperator 
 	{

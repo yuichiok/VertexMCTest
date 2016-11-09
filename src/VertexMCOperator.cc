@@ -8,7 +8,7 @@ using IMPL::VertexImpl;
 using IMPL::ReconstructedParticleImpl;
 using EVENT::LCCollection;
 using UTIL::LCRelationNavigator;
-namespace TTbarAnalysis 
+namespace TTbarAnalysisAlpha 
 {
 	VertexMCOperator:: VertexMCOperator(LCCollection * rel)
 	{
@@ -123,4 +123,4 @@ namespace TTbarAnalysis
 		reco->setEnergy(particle->getEnergy());
 		return reco;
 	}
-} /* TTbarAnalysis */
+} /* TTbarAnalysisAlpha */

@@ -15,7 +15,7 @@
 #include "marlin/VerbosityLevels.h"
 #ifndef _MCOperator_hh
 #define _MCOperator_hh
-namespace TTbarAnalysis 
+namespace TTbarAnalysisAlpha 
 {
 	class MCOperator 
 	{
@@ -66,5 +66,5 @@ namespace TTbarAnalysis
 		//
 			EVENT::MCParticle * cureDoubleCharmDecay(std::vector< EVENT::MCParticle * > & selected);
 	};
-} /* TTbarAnalysis */
+} /* TTbarAnalysisAlpha */
 #endif

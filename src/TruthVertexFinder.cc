@@ -2,7 +2,7 @@
 using std::string;
 using std::vector;
 using std::map;
-namespace TTbarAnalysis
+namespace TTbarAnalysisAlpha
 {
 	TruthVertexFinderAlpha aTruthVertexFinderAlpha ;
 	TruthVertexFinderAlpha::TruthVertexFinderAlpha() : Processor("TruthVertexFinderAlpha") 
@@ -384,10 +384,10 @@ namespace TTbarAnalysis
 			VertexMCOperator vertexOperator(rel);
 			
 			_tag = (opera.CheckProcessForPair(_tagParameter))? 1 : 0;
-			vector< MCParticle * > bquarks = opera.GetPairParticles(_pdgs[0]);
+			int initQuark = abs(_initialQuarkPDGparameter);
+			vector< MCParticle * > bquarks = opera.GetPairParticles(initQuark);//_pdgs[0]
 	 		//GetAsymmetry(bquarks);
 			_nEvt ++ ;
-			int initQuark = abs(_initialQuarkPDGparameter);
 			streamlog_out(MESSAGE) <<"\t|PDG\t\t|Mass\t\t|Charge\t\t|Energy\t\t|Vtx X\t\t|Vtx Y\t\t|Vtx Z\t\t|\n";
 			DecayChain * bChainRaw = opera.Construct(string("b-quark decay chain"), initQuark, _pdgs);
 			if (bChainRaw->GetStatus()) 
@@ -472,6 +472,10 @@ namespace TTbarAnalysis
 				_hVertexTree->Fill();
 				ClearVariables();
 			}
+			delete bbarChainRaw;
+			delete bChainRaw;
+			delete bbarChain;
+			delete bChain;
 			//streamlog_out(MESSAGE) <<"B cos: " << _cosquark << '\n';
 			//streamlog_out(MESSAGE) <<"Bbar cos: " <<_cosantiquark << '\n';
 			streamlog_out(MESSAGE) << "b number: " << _btotalnumber << "\n";
@@ -808,4 +812,4 @@ namespace TTbarAnalysis
 	    // 	    << std::endl ;
 	
 	}
-} /* TTbarAnalysis */
+} /* TTbarAnalysisAlpha */

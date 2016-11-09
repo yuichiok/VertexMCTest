@@ -4,7 +4,7 @@ using std::string;
 using EVENT::LCCollection;
 using EVENT::MCParticle;
 using IMPL::MCParticleImpl;
-namespace TTbarAnalysis
+namespace TTbarAnalysisAlpha
 {
 	MCOperator:: MCOperator (LCCollection * col, LCCollection * rel)
 	{
@@ -71,7 +71,7 @@ namespace TTbarAnalysis
 					PDGTYPE currentPDG = typeOfProducts[j];
 					MCParticle * found = FindYoungestChild(particle, currentPDG, errorType);
 					result->SetStatus(errorType);
-					streamlog_out(MESSAGE) << "WARNING: Status is set to " << errorType <<"!\n";
+					//streamlog_out(MESSAGE) << "WARNING: Status is set to " << errorType <<"!\n";
 
 					if (found) 
 					{
@@ -95,7 +95,7 @@ namespace TTbarAnalysis
 					else 
 					{
 						result->SetStatus(errorType);
-						streamlog_out(MESSAGE) << "WARNING: Status is set to " << errorType <<"!\n";
+						//streamlog_out(MESSAGE) << "WARNING: Status is set to " << errorType <<"!\n";
 						break;
 
 					}
@@ -430,24 +430,20 @@ namespace TTbarAnalysis
 			return pair;
 		}
 		int number = myCollection->getNumberOfElements();
-		int countParticle = 0;
-		int countAntiparticle = 0;
 		MCParticle * b = NULL;
 		MCParticle * bbar = NULL;
 		for (int i = 0; i < number; i++) 
 		{
 			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) );
-			if (particle->getPDG() == pdg && countParticle == 0) 
+			if (particle->getPDG() == pdg && !b) //&& countParticle == 0) 
 			{
 				b = particle;
-				countParticle = 1;
 			}
-			if (particle->getPDG() == -pdg && countAntiparticle == 0) 
+			if (particle->getPDG() == -pdg && !bbar)// && countAntiparticle == 0) 
 			{
 				bbar =  particle;
-				countAntiparticle = 1;
 			}
-			if (countAntiparticle > 0 && countParticle > 0) 
+			if(b && bbar)
 			{
 				break;
 			}
@@ -455,12 +451,12 @@ namespace TTbarAnalysis
 		if (b) 
 		{
 			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*b)));
-			streamlog_out(MESSAGE)<<"INFO: Found b!\n";
+			streamlog_out(MESSAGE)<<"INFO: Found b " << b->getEnergy() << " GeV!\n";
 		}
 		if (bbar) 
 		{
 			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*bbar)));
-			streamlog_out(MESSAGE)<<"INFO: Found bbar!\n";
+			streamlog_out(MESSAGE)<<"INFO: Found bbar " << bbar->getEnergy() << " GeV!\n";
 		}
 		return pair;
 	}
