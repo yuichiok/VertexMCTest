@@ -16,7 +16,7 @@ namespace TTbarAnalysisAlpha
 	}
 	vector< Vertex * > * VertexMCOperator::Construct(DecayChain * chain)
 	{
-		if (!chain || chain->GetSize() == 0) 
+		if (!chain || chain->GetSize() == 0 || !chain->Get(0)) 
 		{
 			return NULL;
 		}
@@ -25,6 +25,7 @@ namespace TTbarAnalysisAlpha
 		const double * ip = chain->Get(0)->getVertex();
 		for (int i = 1; i < chain->GetSize(); i++) // <<==============================
 		{
+		std::cout << "PDG: " << chain->GetParentPDG() << " Size: " << chain->GetSize()  << "\n"	;
 			result->push_back(construct(chain->Get(i), ip, chain->GetParentPDG(), i+1));
 		}
 		for (unsigned int i = 0; i < result->size(); i++) 
@@ -36,20 +37,24 @@ namespace TTbarAnalysisAlpha
 
 	Vertex * VertexMCOperator::construct(EVENT::MCParticle * particle, const double * ip, int pdg, int number)
 	{
+		if (!particle) 
+		{
+			std::cout << "No particle!\n";
+		}
 		//VertexImpl * result = new VertexImpl();
 		MyVertex * result = new MyVertex();
-		
-		const double * initial;
-			initial = particle->getVertex();
-		float distance = MathOperator::getDistance(ip, initial);
+		//const double * initial;
+		//	initial = particle->getVertex();
+		float distance = MathOperator::getDistance(ip, particle->getVertex());
 		result->setPrimary(false);
-		result->setAlgorithmType("VertexMCOperator");
+		result->setAlgorithmType("TruthVertexFinder");
 		
-		result->setPosition(initial[0], initial[1], initial[2]);
+		result->setPosition(particle->getVertex()[0], particle->getVertex()[1], particle->getVertex()[2]);
 		result->addParameter (distance);
 		result->addParameter (pdg);
 		result->addParameter (number);
-
+		//delete initial;
+		std::cout << "Distance: " << distance << "\n";
 		return result;
 	}
 	void VertexMCOperator::AddProngs(Vertex * vertex, vector< MCParticle * > & particles, bool usingRelation)

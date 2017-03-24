@@ -179,6 +179,7 @@ namespace TTbarAnalysisAlpha
 		}
 		_hTree->Branch("cosquark", &_cosquark, "cosquark/F");
 		_hTree->Branch("cosantiquark", &_cosantiquark, "cosantiquark/F");
+		_hTree->Branch("qmomentum", &_qmomentum, "qmomentum/F");
 		_hTree->Branch("totalBcharge", &_totalBcharge, "totalBcharge/I");
 		_hTree->Branch("ccharge", &_ccharge, "ccharge/I");
 		_hTree->Branch("cbarcharge", &_cbarcharge, "cbarcharge/I");
@@ -305,6 +306,7 @@ namespace TTbarAnalysisAlpha
 	void TruthVertexFinderAlpha::WriteQuarksCollection(LCEvent * evt, std::vector< MCParticle * > & quarks)
 	{
 		IMPL::LCCollectionVec * mc = new IMPL::LCCollectionVec ( LCIO::MCPARTICLE ) ;
+		mc->setSubset();
 		if (quarks.size() == 2) 
 		{
 			//streamlog_out(MESSAGE)  << "PDG: " << quarks[0]->getPDG() << '\n';
@@ -386,6 +388,10 @@ namespace TTbarAnalysisAlpha
 			_tag = (opera.CheckProcessForPair(_tagParameter))? 1 : 0;
 			int initQuark = abs(_initialQuarkPDGparameter);
 			vector< MCParticle * > bquarks = opera.GetPairParticles(initQuark);//_pdgs[0]
+			if (bquarks.size() > 0 && bquarks[0]) 
+			{
+				_qmomentum = MathOperator::getModule(bquarks[0]->getMomentum());
+			}
 	 		//GetAsymmetry(bquarks);
 			_nEvt ++ ;
 			streamlog_out(MESSAGE) <<"\t|PDG\t\t|Mass\t\t|Charge\t\t|Energy\t\t|Vtx X\t\t|Vtx Y\t\t|Vtx Z\t\t|\n";
@@ -680,7 +686,7 @@ namespace TTbarAnalysisAlpha
 				
 				mc->addElement(bvertexes->at(i));
 				mcrp->addElement(bvertexes->at(i)->getAssociatedParticle());
-				for (int j = 0; j < bvertexes->at(i)->getAssociatedParticle()->getParticles().size(); j++) 
+				for (unsigned int j = 0; j < bvertexes->at(i)->getAssociatedParticle()->getParticles().size(); j++) 
 				{
 					mcrp->addElement(bvertexes->at(i)->getAssociatedParticle()->getParticles()[j]);
 				}
@@ -692,7 +698,7 @@ namespace TTbarAnalysisAlpha
 			{
 			        mc->addElement(bbarvertexes->at(i));
 				mcrp->addElement(bbarvertexes->at(i)->getAssociatedParticle());
-				for (int j = 0; j < bbarvertexes->at(i)->getAssociatedParticle()->getParticles().size(); j++) 
+				for (unsigned int j = 0; j < bbarvertexes->at(i)->getAssociatedParticle()->getParticles().size(); j++) 
 				{
 					mcrp->addElement(bbarvertexes->at(i)->getAssociatedParticle()->getParticles()[j]);
 				}

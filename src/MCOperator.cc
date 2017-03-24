@@ -450,12 +450,14 @@ namespace TTbarAnalysisAlpha
 		}
 		if (b) 
 		{
-			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*b)));
+			//pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*b)));
+			pair.push_back(b);
 			streamlog_out(MESSAGE)<<"INFO: Found b " << b->getEnergy() << " GeV!\n";
 		}
 		if (bbar) 
 		{
-			pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*bbar)));
+			//pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*bbar)));
+			pair.push_back(bbar);
 			streamlog_out(MESSAGE)<<"INFO: Found bbar " << bbar->getEnergy() << " GeV!\n";
 		}
 		return pair;
@@ -469,7 +471,8 @@ namespace TTbarAnalysisAlpha
 			MCParticle * particle = dynamic_cast<MCParticle*>( myCollection->getElementAt(i) );
 			if (CheckParticle(particle, type) && particle->getParents()[0]->getPDG() == 92) 
 			{
-				pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*particle)));
+				//pair.push_back(new MCParticleImpl((const IMPL::MCParticleImpl&)(*particle)));
+				pair.push_back(particle);
 				streamlog_out(MESSAGE)<<"Found a suitable particle of type " << particle->getPDG() << '\n';
 			}
 			if (pair.size() > 1) 

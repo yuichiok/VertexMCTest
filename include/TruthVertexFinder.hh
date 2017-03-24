@@ -153,6 +153,7 @@ namespace TTbarAnalysisAlpha
 	  float _bbarptmiss;
 	  float _cosquark;
 	  float _cosantiquark;
+	  float _qmomentum;
 
 	
 	  static const int MAXV = 15;
