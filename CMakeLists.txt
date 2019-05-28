@@ -6,7 +6,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
 
 
 # project name
-PROJECT( TruthVertexFinder )
+PROJECT( TruthVertexFinderAlpha )
 
 
 # project version
@@ -25,8 +25,14 @@ INCLUDE( ilcsoft_default_settings )
 
 
 FIND_PACKAGE( Marlin 1.0 REQUIRED ) # minimum required Marlin version
+FIND_PACKAGE( ROOT REQUIRED )
+FIND_PACKAGE( LCIO REQUIRED )
 INCLUDE_DIRECTORIES( ${Marlin_INCLUDE_DIRS} )
+INCLUDE_DIRECTORIES( ${ROOT_INCLUDE_DIRS} )
+INCLUDE_DIRECTORIES( ${LCIO_INCLUDE_DIRS} )
 LINK_LIBRARIES( ${Marlin_LIBRARIES} )
+LINK_LIBRARIES( ${ROOT_LIBRARIES} )
+LINK_LIBRARIES( ${LCIO_LIBRARIES} )
 ADD_DEFINITIONS( ${Marlin_DEFINITIONS} )
 
 # optional package
@@ -39,15 +45,14 @@ ADD_DEFINITIONS( ${Marlin_DEFINITIONS} )
 #ELSE()
 #    MESSAGE( STATUS "AIDA -- not found" )
 #ENDIF()
-FIND_PACKAGE( ROOT )
-INCLUDE_DIRECTORIES( ${ROOT_INCLUDE_DIRS} )
-LINK_LIBRARIES( ${ROOT_LIBRARIES} )
+
+#FIND_PACKAGE( ROOT )
 
 
 
 ### DOCUMENTATION ###########################################################
 
-OPTION( INSTALL_DOC "Set to OFF to skip build/install Documentation" ON )
+OPTION( INSTALL_DOC "Set to OFF to skip build/install Documentation" OFF )
 
 IF( INSTALL_DOC AND EXISTS "${PROJECT_SOURCE_DIR}/doc/CMakeLists.txt" )
     ADD_SUBDIRECTORY( ./doc )
@@ -58,7 +63,7 @@ ENDIF()
 ### LIBRARY #################################################################
 
 # definitions to pass to the compiler
-ADD_DEFINITIONS( " -Wall -ansi -pedantic" )
+ADD_DEFINITIONS( "-Wall -ansi -pedantic -std=gnu++11" )
 ADD_DEFINITIONS( "-Wno-long-long" )
 
 # include directories
