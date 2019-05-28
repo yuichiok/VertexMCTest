@@ -1,4 +1,4 @@
-#include "TruthVertexFinder.hh"
+#include "TruthVertexFinderAlpha.hh"
 using std::string;
 using std::vector;
 using std::map;
@@ -53,7 +53,7 @@ namespace TTbarAnalysisAlpha
         	    _outputquarkcolName,
            	 std::string("MCbquarks")
 	    );
-	    registerInputCollection( LCIO::RECONSTRUCTEDPARTICLE,
+	    registerInputCollection( LCIO::LCRELATION,
 	    	"RelCollectionName",
 		"Name of the Jet relation collection",
 		_colRelName,

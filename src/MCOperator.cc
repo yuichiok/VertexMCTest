@@ -1,4 +1,6 @@
 #include "MCOperator.hh"
+using namespace lcio ;
+using namespace marlin ;
 using std::vector;
 using std::string;
 using EVENT::LCCollection;
